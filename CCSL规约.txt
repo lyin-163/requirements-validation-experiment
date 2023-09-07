@@ -1,0 +1,3038 @@
+RUDecision = UpdateTaskStatus union UpdateRobotStatus
+UpdateTaskStatusT = CMSTaskFailed union CMSTaskCompleted 
+UpdateTaskStatus = UpdateTaskStatusT union CMSTaskCanceled
+fail = timeout union ConfirmLost
+fail strictPre failed
+CMSAcceptRequest coincides createTask
+RtOpTaskU = createTask union deleteTask 
+tOpTask = tOpTaskU union completeTask
+RegularUpdate.start coincides rountineConn.start
+RobotConnected.start alternate RobotConnected.end
+dataUpdateFinish  strictPre  RegularUpdate.end 
+reAssignRobot subClock AssignRobot
+reAssignRequest.start subClock AssignRequest.start
+reAssignRequest.end subClock AssignRequest.end  
+AssignRequest.end = AssignRequestSucc unionAssignRequestFail
+SendCancel.end = SendCancelSucc union SendCancelFail
+ParseData.end = ParseDataFail union ParseDataSucc
+DatasetConnFault strictPre ParseDataFail
+ParseDataFail  strictPre  RegularUpdateFail
+RegularUpdate.start alternate RegularUpdate.end
+rualt1end coincides RegularlyUpdate.end
+ComFault subClock RegularlyUpdateFail
+UpdateFinishSucc strictPre RegularlyUpdateSucc
+UpdateFinishFail strictPre RegularlyUpdateFail
+ParseDataSucc  strictPre  dataUpdateSucc
+ParseDataFail  strictPre  dataUpdateFail
+RegularUpdate.end = RegularUpdateFail union RegularUpdateSucc
+CMConnected.start alternate CMConnected.end
+selectConKind = byGPRS union byWIFI
+byGPRS exclude byWIFI
+startConn.start=startGConn.start union startWConn.start
+startConn.end=startGConn.end union startWConn.end
+startGConn.start=reGConn.start union reWConn.start
+startGConn.end=reGConn.end union reWConn.end
+reConn.start=reGConn.start union reWConn.start
+reConn.end=reGConn.end union reWConn.end
+startGConn.end=startGfail union startGsucc
+startWConn.end=startWfail union startSsucc
+startConnFail = startGfail union startWfail
+startConnSucc = startGsucc union  startWsucc
+ConnResult=startConnFail union startConnSucc
+GconFailCount= startGfail SampledOn startGConn.start
+Gcontimeout= GconFailCount filteredBy (001)
+WconFailCount= startWfail SampledOn startWConn.start
+Wcontimeout= WconFailCount filteredBy (001)
+ConnTimout = Wcontimeout union Gcontimeout
+TestConn.end = testPass union noAvailable
+TestConn.start = testGPRS.start union testWIFI.start
+testGPRS.start  strictPre  testGPRS.end
+testWIFI.start  strictPre  testWIFI.end
+TestConn.start  strictPre  TestConn.end
+testGPRS.end =Gtestfail union Gtestpass
+testWIFI.end =Wtestfail union Wtestpass
+testPass = Gtestpass union Wtestpass
+noAvailable =Gtestfail intersect Wtestfail
+accConn.end=ComFault union ComNormal
+CMFaultOccur = noAvaliable union ComFault
+SendUpdates.endU = updateFail union connBreak 
+SendUpdates.end = SendUpdates.endU union updateFinish
+routineConn.start subClock startConn.start 
+routineConn.end subClock startConn.end
+reConn.start subClock startConn.start 
+reConn.end subClock startConn.end
+startConn.end =rountineConn.end union reConn.end
+routineConn.start = idealClk descritizedBy 2400 
+rerountineConn.start subClock routineConn.start
+rerountineConn.end subClock routineConn.end
+rountineConn.start  strictPre  rountineConn.end
+reConn.start  strictPre  reConn.end
+CMcontimeout=Gcontimeout union Wcontimeout
+ConnFeedBackU = CMcontimeout union updateFinish 
+ConnFeedBackUU = ConnFeedBackU union reportFinish 
+ConnFeedBackUUU = ConnFeedBackUU union CMSRequestFeedBack 
+ConnFeedBack = ConnFeedBackUUU union CMSCancelFeedBack
+closeConn=closeGConn union closeWConn
+updateFinish = updateSucc union updateFail
+updateSucc exlusion updateFail
+lostCounter= dataLost SampledOn SendUpdates
+updateFail = lostCounter filteredBy (001)
+reSendUpdates subClock SendUpdates
+startGConn alternate closeGConn
+startWConn alternate closeWConn
+ProcessConn.end=receiveConnSucc union receiveConnFail
+receiveConnSucc exclude receiveConnFail
+ProcessRequest.start  strictPre  CheckStatus
+ProcessRequest.start  strictPre  CheckQueue
+CheckStatus  strictPre  ProcessRequest.end
+CheckQueue  strictPre  ProcessRequest.end
+ProcessRequest.end = reqOK union reqnotOK
+reqOK exclusion reqnotOK
+reqOK coincides RtRequestAccept
+reqnotOK coincides RtRequestReject
+reportFinish = reportSucc union reportFail
+reportFail coincides warningSiren.start
+warningSiren.start  strictPre  warningSiren.end
+AdminLoginResult=AdminLoginSucc union AdminLoginReject
+UserLoginResult=UserLoginSucc union UserLoginReject
+UserCheck.end = valid union inValid
+RoleCheck.end = Authorized union notAuthorized
+AssignFail = RcomReqFail union RtRequestReject
+AssignFeedBack = AssignFail union AssinSucc
+RtRequestFeedBack alternate AssignFeedBack
+RtRequestAccept  strictPre  AssignSucc
+RtRequestReject  strictPre  AssignFail
+Display=DisplayWarning union DisplayReport
+CMSRejectRequest exclude CMSAcceptRequest
+PoseOdometry coincides PoseReading
+PoseLoc = PoseOdometry delay 1
+PosePos = PoseLoc delay 1
+UpdatePos = PoseLoc delay 1
+Detect.start strictPre Detect.end
+Detect.endU = NoDetected union TargetDetected 
+Detect.endUU = Detect.endU union ObstacleDetected 
+Detect.end =  Detect.endUU union Collision
+RePlan - ObstacleDetected  strictPre  0.5
+Distance[curV*i] coincides idealClk[i]
+NRInitialParams.start coincides NRCheckSensors
+NRCheckSensors = NRSensorsNormal union NRSensorsFault
+NRCheckSensors  strictPre  CheckMap
+CheckMap = noMap union hasMap
+NRSensorsFaultU = LocalizationSensorFault union RoverDriverFault 
+NRSensorsFault = NRSensorsFaultU union DetectionSensorFault
+NRCheckStaus= NRSensorsFault union RDStatusNormal
+NRCheckStaus = idealClk discretizedBy 10
+CheckSensors = NRSensorsFault union NRSensorsNormal
+NRReady = hasMap sup NRSensorsNormal
+NRStatusCheck.end = NRStatusNormal union NRStatusAbnormal
+ReceiveTraj - SendTraj  strictPre 0.02
+connectSLAMU = connectSLAMSucc union connectSLAMFail 
+connectSLAM = connectSLAMU union SLAMconncTimeout
+SLAMconncTimeout = BuildMap.start defer connectSLAMFail for (0001)
+MapTimeout= SLAMalg.start defer MapFail for (0001)
+SLAMalg.endU = NRSensorFault union MapFinish 
+SLAMalg.endUU = SLAMalg.endU union MapFail 
+SLAMalg.end = SLAMalg.endUU union MapTimeout
+MapMalFunctionU = NRSensorFault union MapTimeout 
+MapMalFunction = MapMalFunctionU union SLAMconncTimeout
+Positioning.start coincides PoseLoc
+Postitioning.end coincides PosePos
+NRFaultOccur = NRSensorFault union Collision
+NRCheckStaus= RDFaultOccur union NRStatusNormal
+NRCheckStaus = idealClk discretizedBy 10
+SelectNRSensorConfig = UrgNRConfStart union RegNRConfStart
+SLAMalg.start alternate SLAMalg.end
+ArriveTarget subClock Stopped
+TargetDetected strictPre ArriveTarget
+RtFeedBackCancel = RtConfirmCancel union RtCancelReject
+RtConfirmCancel exclusion RtCancelReject
+RtFeedBackCancel alternate CMSCancelFeedback
+RtConfirmCancel strictPre CMSConfirmCancel
+RtCancelReject strictPre CMSRejectCancel
+CMSCancelFeedback = CMSRejectCancel union CMSConfirmCancel
+CMSRejectCancel exclusion CMSConfirmCancel
+notOK subClock inDly
+OK exclude inDly
+RtConfirmCancel coincides cancelTask
+ConfirmReqFeedBack = RtConfirmDelivery.end union RtConfirmCancel
+cancelTask strictPre canceled
+SelfInspection = idealClk descritizedBy 0.01
+FaultOccurU = RDFaultOccur union NRFaultOccur 
+FaultOccurUU = FaultOccurU union MapMalFunction 
+FaultOccur = FaultOccurUU union CMFaultOccur
+MalfunctionU = FaultOccur union SelfChecked.Error.true 
+MalfunctionUU = MalfunctionU union SensorFault 
+Malfunction = MalfunctionUU union ComFault
+SignifyUsers.start - Malfunction strictPre  0.5
+Maintenance.start - SignifyUsers.end  strictPre 0.5
+Mainenance.startU = RDMaintaining.start union NRMaintaining.start 
+Mainenance.start = Mainenance.startU union ORMaintaining.start
+Request = RegularDeliveryRequest union UrgentDeliveryRequest
+CMSRequestFeedback = CMSRejectRequest union CMSAcceptRequest
+CMSRejectRequest exclusion CMSAcceptRequest
+FeedBackAssignReq = RtRequestAccept union RtRequestReject
+FeedBackAssignReq strictPre AssignRequest.end
+FeedBackAssignReq alternate CMSRequestFeedback
+RtRequestAccept exclusion RtRequestReject
+RtRequestAccept = RtUrgRequestAccept union RtRegRequestAccept
+RtRequestReject = RtUrgRequestReject union RtRegRequestReject
+FeedBackAssignReq strictPre AssignRequest
+Stopped strictPre ConfirmDelivery.start
+ConfirmDelivery.start coincides RtSignifyDelivery
+RtSignifyDelivery strictPre ConfirmDelArrival
+ConfirmDelArrival strictPre OpenCabin
+OpenCabin strictPre ConfirmGoods.start
+ConfirmGoods.start strictPre ConfirmGoods.end
+ConfirmGoods.end strictPre ConfirmDelivery.end
+ConfirmDelivery.end = ConfirmReceive union ConfirmLost
+UrgRequestAccept alternate createUrg
+RegRequestAccept alternate createReg
+CheckRobot.start  strictPre   CheckRobotList
+CheckRobotList  strictPre  pickRobot
+pickRobot  strictPre  CheckStatus.start
+CheckStatus.end  strictPre  CheckRobot.end
+CheckStatus.start = RDCheckStatus.start union NRCheckStatus.start
+CheckStatus.end = RDCheckStatus.end union NRCheckStatus.end
+SensorFault = RDSensorFault union NRSensorFault
+FailTask coincides failed
+RtCompleteTask coincides completed
+DecideUpdates= CheckLocation intersect CheckTaskStatus
+DecideUpdates =idealClk discretizedBy 1200
+reConn subClock startConn
+dataUpdateFinish = dataUpdateFail union dataUpdateSucc
+UFFeedBack = UFFeedBackFail union UFFeedBackSucc
+dataUpdateFail strictPre UFFeedBackFail
+dataUpdateSucc strictPre UFFeedBackSucc
+dataUpdateFinish alternate UFFeedBack
+UpdateFinishFail = UFFeedBackFail delayedFor 5 on idealClk
+UpdateFinishSucc = UFFeedBackSucc delayedFor 5 on idealClk
+UpdateFinish = UpdateFinishFail union UpdateFinishSucc
+UFFeedBack alternate UpdateFinish
+CheckValidity = InoValid union InfoInvalid
+reConnect.start subClock Connect.start 
+reConnect.end subClock Connect.end
+Connect.start alternate Connect.end
+Connect.end = Dconfail union Dconsucc
+DconFailCount = Dconfail SampledOn Connect.start
+DconTimeout = DconFailCount filteredBy 001
+CheckRInfo = RInfoInvalid union RInfoValid 
+RInfoInvalid exclude RInfoValid 
+reFillRobotInfo subClock FillRobotInfo
+reAddRobotSubmit subClock AddRobotSubmit
+reFillRobotChanges.start subClock FillRobotChanges.start
+reFillRobotChanges.end subClock FillRobotChanges.end
+reChgRobotSubmit subClock ChgRobotSbumit
+CheckRobotChg = RobotChagInvalid union RobotChagValid 
+RobotChagInvalid exclude RobotChagValid 
+EnterEditRobotPage strictPre  QueryRobots
+EnerAddRobotPage strictPre FillRobotInfo.start
+FillRobotInfo.end strictPre AddRobotSubmit
+SelectRobots strictPre DeleteSelectedRobots
+SelectRobottoChag  strictPre  FillRobotChanges.start
+reFillRobotInfo.end  strictPre  reAddRobotSubmit
+FillRobotChanges.end strictPre  ChgRobotSubmit
+reFillRobotChanges.end strictPre  reChgRobotSubmit
+NRVCmd = SendExpectV union Brake union Twist
+ReceiveExpectV=NRVCmd delayedFor 5 
+StartDly coincides turn
+RDInitialParams.start coincides RDCheckSensors
+RDCheckSensors = RDSensorsNormal union RDSensorsFault
+RDFaultOccur = RDSensorFault union Collision
+RDCheckStaus= RDFaultOccur union RDStatusNormal
+RDCheckStaus = idealClk discretizedBy 10
+OpenCabin alternate CloseCabin
+ConfirmGoods.start = TakeinGoods.start union TakeoutGoods.start
+ConfirmGoods.end = TakeinGoods.end union TakeoutGoods.end
+ComputeCmdU = SpeedKeep union SpeedUp 
+ComputeCmdUU = ComputeCmdU union SpeedDown 
+ComputeCmd = ComputeCmdUU union EmergencyBrake
+RDMaintain.end = RDStatusNormal union RDStatusAbNormal
+SelectRDSensorConfig = UrgRDConfStart union RegRDConfStart
+ConfirmArrival = ConfirmDelArrival union ConfirmReyArrival
+ConfirmReyArrival strictPre TakeinGoods.start
+ConfirmDelArrival strictPre TakeoutGoods.start
+UpdateandPullInfo.end - UpdateandPullInfo.start  strictPre  60
+altfault=ReportFault union RobotLostComLong
+NotifyFault-altfault strictPre 60
+MatchRobot-NotifyFault  strictPre 60
+UpdateandPullInfo.start - MatchRobot strictPre 60
+Info-UpdateandPullInfo.end  strictPre 30
+NotifyMaintain - Info  strictPre 30
+NotifyDelay - NotifyMaintain  strictPre 10
+CheckUsrInfo = UInfoInvalid union UInfoValid
+UInfoInvalid exclude UInfoValid
+CheckValidity = RoleAuthInvalid union RoleAuthValid
+RoleAuthInvalid exclude RoleAuthValid
+CheckUsrChagValidity = UsrChagInvalid union UsrChagValid
+UsrChagInvalid exclude UsrChagValid
+reFillPersonInfo.start subClock FillPersonInfo.start
+reFillPersonInfo.end subClock FillPersonInfo.end
+reAssignRoleAuthority.start subClock AssignRoleAuthority.start
+reAssignRoleAuthority.end subClock AssignRoleAuthority.end
+reWrapUsrRole subClock WrapUsrRole
+EnterChagUsrPage  strictPre  QueryUsrs
+EnterAddUsrPage  strictPre  FillPersonInfo
+FillPersonInfo  strictPre  CheckUsrInfo
+WrapUsrRole  strictPre  CheckValidity
+reConnDataset.start subClock ConnDataset.start
+SelectUsrs  strictPre  DeleteSelectUsrs
+SelectUsrtoChag  strictPre  FillChanges.start
+reFillUsrChanges.start subClock reFillUsrChanges.start
+reFillUsrChanges.end subClock reFillUsrChanges.end
+reFormUsrChanges subClock FormUsrChanges
+reAddUsrSubmit subClock AddUsrSubmit
+FillPersonInfo.end  strictPre  AddUsrSubmit
+reFillPersonInfo.end  strictPre  reAddUsrSubmit
+reChgUsrSubmit subClock ChgUsrSubmit
+FillChanges.end  strictPre  ChgUsrSubmit
+reChgUsrSubmit subClock ChgUsrSubmit
+UrgConfStart = UrgRDConfStart union UrgNRConfStart
+RegConfStart = RegRDConfStart union RegNRConfStart
+urgDectPeriod = idealClk descritizedBy 0.05
+regDectPeriod = idealClk descritizedBy 0.03
+urgConfSTrigger = urgConfStart sampledOn urgDectPeriod
+regConfSTrigger = regConfStart sampledOn regDectPeriod
+urgConfETrigger = urgConfEnd sampledOn urgDectPeriod
+regConfETrigger = RegConfig.regConfEnd sampledOn regDectPeriod
+nsurgc = urgConfETrigger -  urgConfSTrigger on urgDectPeriod
+nsregc = regConfETrigger -  regConfSTrigger on regDectPeriod
+urgDectSensing = urgConfSTrigger defer urgDectPeriod for nsurgc
+regDectSensing = regConfSTrigger defer regDectPeriod for nsregc
+PoseReading = urgDectSensing union regDectSensing
+urgAlgPeriod = idealClk descritizedBy 120
+regAlgPeriod = idealClk descritizedBy 20
+nsurgcalg = urgConfETrigger -  urgConfSTrigger on urgAlgPeriod
+nsregcalg = regConfETrigger -  regConfSTrigger on regAlgPeriod
+urgDectAlgStart = urgConfSTrigger defer urgAlgPeriod for nsurgcalg
+regDectAlgStart = regConfSTrigger defer regAlgPeriod for nsregcalg
+Detect.start = urgDectAlgStart union regDectAlgStart 
+urgDectAlgEnd - urgDectAlgStart  strictPre  0.15
+regDectAlgEnd =regDectAlgStart  strictPre  0.2
+Detect.end = urgDectAlgEnd union regDectAlgEnd
+createTask = createReg union createUrg 
+timerTick = idealClk descritizedBy 1
+regStartTrigger = regStart sampledOn timerTick
+regEndTrigger =  regEnd sampledOn timerTick
+ns1 = regEndTrigger -regStartTrigger on tierTick
+inRegular = regStartTrigger defer timerTick for ns1
+becomeUrg = inRegular delayedFor 600
+urgStartTrigger = urgStart sampledOn timerTick
+urgEndTrigger =  urgEnd sampledOn timerTick
+ns2 = urgEndTrigger -urgStartTrigger on timerTick
+inUrgent = urgStartTrigger defer timerTick for ns2
+inRegular exclude inUrgent
+schedule = schdReg union schdUrg
+cancelTask = cancelReg union cancelUrg
+deleteTask = FailTask union cancelTask
+deleteTask = deleted
+completeTask = completed
+completed exclude failed
+completed exclude canceled
+failed exclude canceled
+inDly = dlyStart concat timerTick
+urgInDly =  inUrgent intersect inDly
+regInDly = inRegular intersect inDly
+timeout = inUrgent delayedFor 12000
+ReceiveSchedule - SendSchedule strictPre 0.2
+CheckMap - ReceiveSchedule strictPre 0.2
+PathSearch.start - CheckMap  strictPre  0.1
+PathSearch.end - PathSearch.start strictPre 0.2
+PathSearch.end coincides SendTraj
+UpdateMap - ObstacleDetected  strictPre 0.2
+UpdatePath.start - UpdateMap  strictPre  0.1
+UpdatePath.end - UpdatePath.start strictPre 0.2
+UpdatePath.end coincides RePlan
+triggerScheduleU = createTask union becomeUrg 
+triggerSchedule = triggerSchedule union cancelTask
+schEnd - schStart  strictPre 100
+waitingStatus = onlyUrg union onlyReg 
+waitingStatus = waitingStatusU union hasBoth
+onlyUrg exclude onlyReg
+onlyUrg exclude hasBoth
+onlyReg exclude hasBoth
+RoverDriver_PoseOdometry_snd strictPre  PoseOdometry
+PoseOdometry  strictPre  PositionTracker_PoeOdometry_rec
+LocationSensor_PoseLoc_snd  strictPre  PoseLoc
+PoseLoc  strictPre  PositionTracker_PoseLoc_rec
+PositionTracker_PoeOdometry_rec  strictPre  PositionTracker_PoseLoc_rec
+PositionTracker_PosePos_snd  strictPre  PosePos
+PositionTracker_PoseLoc_rec  strictPre  PositionTracker_PosePos_snd
+PosePos  strictPre  Navigator_PosePos_rec
+DetectionSensor_PoseReading_snd  strictPre  PoseReading
+PoseReading  strictPre  Navigator_PoseReading_rec
+Navigator_PosePos_rec  strictPre   Navigator_PoseReading_rec
+Navigator_PoseReading_rec  strictPre  Navigator_UpdatePos_snd
+Navigator_UpdatePos_snd  strictPre  UpdatePose
+UpdatePose  strictPre  Navigator_UpdatePos_rec
+Navigator_SendSchedule_snd  strictPre  SendSchedule
+SendSchedule  strictPre  TrajPlanner_SendSchedule_rec
+TrajPlanner_SendSchedule_rec  strictPre  TrajPlanner_SendTraj_snd
+TrajPlanner_SendTraj_snd  strictPre  SendTraj
+SendTraj  strictPre  Navigator_SendTraj_rec
+NoDetected  exclude   TargetDetected
+NoDetected  exclude  ObstacleDetected
+TargetDetected  exclude  ObstacleDetected
+NoDetected coincides Navigator_SendExprectV_snd
+Navigator_SendExpectV_snd  strictPre  SendExpectV
+SendExpectV  strictPre  RoverDriver_SendExpectV_rec
+TargetDetected coincides Navigator_Brake_snd
+Navigator_Brake_snd  strictPre  Brake
+Brake  strictPre  RoverDriver_Brake_rec
+RoverDriver_Brake_rec  strictPre  RoverDriver_Stopped_snd
+RoverDriver_Stopped_snd  strictPre  Stopped
+Stopped  strictPre  Navigator_Stopped_rec
+ObstacleDetected coincides Navigator_UpdateMap_snd
+Navigator_UpdateMap_snd  strictPre  UpdateMap
+UpdateMap  strictPre  TrajPlanner_UpdateMap_rec
+TrajPlanner_UpdateMap_rec  strictPre  TrajPlanner_Replan_snd
+TrajPlanner_Replan_snd  strictPre  Replan 
+Replan  strictPre  Navigator_Replan_rec
+Navigator_Replan_rec  strictPre  Navigator_Twist_snd
+Navigator_Twist_snd  strictPre Twist
+Twist  strictPre  RoverDriver_Twist_rec
+ngbegin1=NoDetected  union  TargetDetected  union  ObstacleDetected
+ngend1U = RoverDriver_SendExpectV_rec  union  RoverDriver_Brake_rec 
+ngend1 = ngend1U union  RoverDriver_Stopped_rec
+ngbegin1  alternate  ngend1
+PCInitial strictPre ComRobotCancel
+ComRobotCancel strictPre ProcessCancel.start
+ProcessCancel.end = OK union notOK
+OK exclusion notOK
+notOK coincides RtCancelReject
+OK coincides RtConfirmCancel
+RtConfirmCancel strictPre Scheduling.start
+Scheduling.end coincides Scheduling.left
+NavigationToGetGoods.end subClock ConfirmReyArrival
+NavigationToGetGoods.start strictPre NavigationToGetGoods.end
+NavigationToGetGoods.start subClock Navigation.start
+NavigationToGetGoods.end subClock Navigation.end
+Deliver.start strictPre Deliver.end
+Deliver.start subClock Navigation.start
+Deliver.end subClock Navigation.end
+Navigation.start strictPre Navigation.end
+Scheduling.end strictPre TOChoice
+TOChoice = hasGoods union noGoods
+PCMerge1 = noGoods union TakeoutGoods.end
+hasGoods strictPre TakeoutGoods.start
+TakeoutGoods.start strictPre TakeoutGoods.end
+PCMerge1 strictPre RtConfirmCancel
+PCmerge2 = RtCancelReject union RtConfirmCancel
+PCmerge2 strictPre PCFinal
+PFInitial strictPre SelfInspection.start
+PFInitial strictPre FaultOccur
+SelfInspection.end coincides PFChoice
+PFChoice = NoError union Error
+NoError exclude Error
+PFMerge1 = FaultOccur union Error
+PFMerge2 = NoError union Maintenance.end
+PFMerge2 strictPre PFFinal
+PFMerge1 strictPre CheckCMSConn
+CheckCMSConn coincides PFD2
+PFD2 = notConnected union connected
+notConnected exclude connected
+notConnected strictPre startConn.start
+startConn.end coincides PFD3
+PFD3 = startConnSucc union startConnFail
+PFM1 = connected union startConnSucc
+PFM1 strictPre reportFault
+PFM2 = SignifyUsers.end union CMSCom_startConnFail_snd
+reportFault strictPre SignifyUsers.start
+SignifyUsers.start strictPre SignifyUsers.end
+PFM2 strictPre Maintenance.start
+Maintenance.start strictPre Maintenance.end
+PRInitial strictPre ComRobotReq
+ComRobotReq strictPre ProcessRequest.start
+CheckRobot.end = reqOK union reqnotOK
+reqOK exclude reqnotOK
+reqOK coincides RtRequestAccept
+reqnotOK coincides RtRequestReject
+RtRequestAccept strictPre Scheduling.start
+Scheduling.start  strictPre Scheduling.end
+RtRequestAccept strictPre NavigationToGetGoods.start
+NavigationToGetGoods.end strictPre AcceptGoods.start
+AcceptGoods.start coincides RtSignifyReach
+RtSignifyArrival = RtSignifyReach union RtSignifyDelivery
+PRMerge3 = AcceptGoods.end union becomeUrg
+PRMerge3 strictPre UpdateQueue
+UpdateQueue strictPre Deliver.start
+Deliver.start strictPre Deliver.end
+Deliver.end strictPre ConfirmDelivery.start 
+ConfirmDelivery.start strictPre ConfirmDelivery.end
+ConfirmDelivery.end = ConfirmLost union ConfirmReceive
+ConfirmLost exclude ConfirmReceive
+ConfirmLost coincides FailTask
+ConfirmReceive coincides CompleteTask
+PRMerge4 = FailTask union CompleteTask
+PRJoin = PRMerge4 sup Scheduling.end
+PRMerge5 = PRJoin union RtRequestReject
+PRMerge5 strictPre PRFinal
+UpdateQueue strictPre SchedulingInitial
+SchedulingFinal strictPre NRInitial
+NRFinal strictPre ConfirmDelivery.start
+ConfirmDelivery.start strictPre CompleteTask
+ConfirmLost strictPre FailTask
+RDInitial.start coincides RDInitial.exit
+RDInitial.start coincides RDInitial.left
+RDt1.tr coincides RDInitial.left
+RDt1.reached coincides RDInitial.start
+RDt1.reached precedes RDt1.begin
+RDt1.tr precedes RDt1.begin
+RDInitial.left precedes RDt1.traversed
+RDt1.completed subClock RDInitialization.start
+RDt1.begin coincides RDt1.traversed
+RDt1.traversed coincides RDt1.completed
+RDInitialization.start precedes RDInitialization.exit
+RDInitialization.exit precedes RDInitialization.left
+RDInitialization.start  coincides RDInitialization.ey.start
+RDInitialization.ey.end strictPre RDInitialization.exit
+RDInitialization.ey.start coincides RDInitialization.ey.end
+RDInitialization.ey.end coincides SelectRDSensorConfig
+RDInitialization.ey.end strictPre RDInitialization.exit
+RDInitialization.start strictPre RDInitialization.do.start
+RDInitialization.do.end strictPre RDInitialization.exit
+RDInitialization.do.completed exclude RDInitialization.do.aborted
+RDInitialization.do.end = RDInitialization.do.completed union RDInitialization.do.aborted
+RDInitialization.do.start strictPre RDInitialization.do.end
+RDInitialization.do.start coincides RDInitialParams.start
+RDInitialization.do.end coincides RDInitialParams.end
+RDInitialization.exit coincides RDInitialization.et.start
+RDInitialization.left coincides RDInitialization.et.end
+RDInitialization.et.start coincides RDInitialization.et.end
+RDInitialization.et.start coincides RDReady
+RDInitialization.ey.end precedes RDInitialization.et.end
+RDt2.tr coincides RDInitialization.left
+RDt2.reached coincides RDInitialization.start
+RDt2.reached precedes RDt2.begin
+RDt2.tr precedes RDt2.begin
+RDInitialization.left precedes RDt2.traversed
+RDt2.completed subClock RDIdle.start
+RDt2.begin coincides RDt2.traversed
+RDt2.traversed coincides RDt2.completed
+RDNormal.start precedes RDNormal.exit
+RDNormal.exit precedes RDNormal.left
+RDNormal.start strictPre RDNormal.do.start
+RDNormal.do.end strictPre RDNormal.exit
+RDNormal.do.completed exclude RDNormal.do.aborted
+RDNormal.do.end = RDNormal.do.completed union RDNormal.do.aborted
+RDNormal.do.start coincides RDNormal.do.end 
+RDNormal.do.start coincides PoseOdometry
+RDNormalInnerStart = RDIdle.start union RDDriving.start union
+ TakeoutGoods.start union TakeinGoods.start union RDNInitial.start union RDSelfCheck.start
+RDNormalInnerExit = RDIdle.exit union RDDriving.exit union
+ TakeoutGoods.exit union TakeinGoods.exit union RDNInitial.exit union RDSelfCheck.exit
+RDNormal.start precedes RDNormalInnerStart
+RDNormalInnerExit precedes RDNormal.Exit
+RDNormal.start coincides RDNInitial.start
+RDIdle.start precedes RDIdle.exit
+RDIdle.exit precedes RDIdle.left
+RDIdle.start strictPre RDIdle.do.start
+RDIdle.do.end strictPre RDIdle.exit
+RDIdle.do.completed exclude RDIdle.do.aborted
+RDIdle.do.end = RDIdle.do.completed union RDIdle.do.aborted
+RDIdle.do.start coincides RDIdle.do.end 
+RDIdle.do.start coincides UpdateSchedule
+RDIdle.exit coincies RDIdle.do.end
+RDIdle.exit coincides RDIdle.left
+RDt3.tr subClock StartDly
+RDt3.reached coincides RDIdle.start
+RDt3.reached precedes RDt3.begin
+RDt3.tr precedes RDt3.begin
+RDIdle.left precedes RDt3.traversed
+RDt3.completed subClock RDDriving.start
+RDt3.begin coincides RDt3.traversed 
+RDt3.traversed coincides RDt3.completed
+RDt5.tr subClock ConfirmArrival
+RDt5.reached coincides RDIdle.start
+RDt5.reached precedes RDt3.begin
+RDt5.tr precedes RDt3.begin
+RDIdle.left precedes RDt5.traversed
+RDt5.completed subClock CabinOpen.start
+RDt5.begin coincides RDt5.traversed 
+RDt5.traversed coincides RDt5.completed
+RDt6.tr subClock PowerOff
+RDt6.reached coincides RDIdle.start
+RDt6.reached precedes RDt6.begin
+RDt6.tr precedes RDt6.begin
+RDIdle.left precedes RDt6.traversed
+RDt6.completed subClock RDFinal.start
+RDt6.begin coincides RDt6.traversed 
+RDt6.traversed coincides RDt6.completed
+RDt7.tr subClock RDSensorFault
+RDt7.reached coincides RDInitialization.start
+RDt7.reached precedes RDt7.begin
+RDt7.tr precedes RDt7.begin
+RDInitialization.left precedes RDt7.traversed
+RDt7.completed subClock RDMaintaining.start
+RDt7.begin coincides RDt7.traversed 
+RDt7.traversed coincides RDt7.completed
+RDt8.tr subClock PowerOff
+RDt8.reached coincides RDInitialization.start
+RDt8.reached precedes RDt8.begin
+RDt8.tr precedes RDt8.begin
+RDInitialization.start precedes RDt8.traversed
+RDt8.completed subClock RDFinal.start
+RDt8.begin coincides RDt8.traversed 
+RDt8.traversed coincides RDt8.completed
+CabinOpen.start precedes CabinOpen.exit
+CabinOpen.exit precedes CabinOpen.left
+CabinOpen.start coincides CabinOpen.ey.start
+CabinOpen.ey.end strictPre CabinOpen.exit
+CabinOpen.ey.start coincides CabinOpen.ey.end 
+CabinOpen.ey.start coincides OpenCabin
+CabinOpen.start strictPre CabinOpen.do.start
+CabinOpen.do.end strictPre CabinOpen.exit
+CabinOpen.do.completed exclude CabinOpen.do.aborted
+CabinOpen.do.end = CabinOpen.do.completed union CabinOpen.do.aborted
+CabinOpen.do.start strictPre CabinOpen.do.end
+CabinOpen.do.start ConfirmGoods.start
+CabinOpen.do.end ConfirmGoods.end
+CabinOpen.ey.end strictPre CabinOpen.do.start
+CabinOpen.exit coincides CabinOpen.et.start
+CabinOpen.left CabinOpen.et.end
+CabinOpen.et.start coincides CabinOpen.et.end
+CabinOpen.et.start coincides CloseCabin
+CabinOpen.ey.start precedes CabinOpen.et.start
+CabinOpen.do.end precedes CabinOpen.et.start
+RDt9.tr subClock GoodsReceive
+RDt9.reached coincides CabinOpen.start
+RDt9.reached precedes RDt9.begin
+RDt9.tr precedes RDt9.begin
+CabinOpen.left precedes RDt9.traversed
+RDt9.completed subClock RDIdle.start
+RDt9.begin coincides RDt9.traversed 
+RDt9.traversed coincides RDt9.completed
+RDt10.tr subClock ConfirmDelivery.end
+RDt10.reached coincides CabinOpen.start
+RDt10.reached precedes RDt10.begin
+RDt10.tr precedes RDt10.begin
+CabinOpen.left precedes RDt10.traversed
+RDt10.completed subClock RDIdle.start
+RDt10.begin coincides RDt10.traversed 
+RDt10.traversed coincides RDt10.completed
+RDt11.tr subClock ReceiveExpectV
+RDt11.reached coincides RDDriving.start
+RDt11.reached precedes RDt11.begin
+RDt11.tr precedes RDt11.begin
+RDDriving.left precedes RDt11.traversed
+RDt11.completed subClock RDDriving.start
+RDt11.begin coincides RDt11.traversed 
+RDt11.traversed coincides RDt11.completed
+RDDriving.start precedes RDDriving.exit
+RDDriving.exit precedes RDDriving.left
+RDDriving.start coincides RDDriving.ey.start
+RDDriving.RDDriving.end strictPre RDDriving.ey.end
+RDDriving.ey.start coincides RDDriving.computeCmd
+RDDriving.ey.start coincides RDDriving.ey.end
+RDDriving.start strictPre RDDriving.do.start
+RDDriving.do.end strictPre RDDriving.exit
+RDDriving.do.completed exclude RDDriving.do.aborted
+RDDriving.do.end = RDDriving.do.completed union RDDriving.do.aborted
+RDDriving.do.start coincides MaintainSpeedCurve.start
+RDDriving.do.end coincides MaintainSpeedCurve.end
+RDDriving.do.start strictPre RDDriving.do.end
+RDDriving.ey.end strictPre RDDriving.do.start
+RDDriving.exit coincides RDDriving.left
+RDDriving.exit = RDDriving.ey.end sup RDDriving.do.end
+RDt12.tr subClock Stopped
+RDt12.reached coincides RDDriving.start
+RDt12.reached precedes RDt12.begin
+RDt12.tr precedes RDt12.begin
+RDDriving.left precedes RDt12.traversed
+RDt12.completed subClock RDIdle.start
+RDt12.begin coincides RDt12.traversed 
+RDt12.traversed coincides RDt12.completed
+RDt13.tr coincides RDNInitial.left
+RDt13.reached coincides RDNInitial.start
+RDt13.reached precedes RDt13.begin
+RDt13.tr precedes RDt13.begin
+RDNInitial.left precedes RDt13.traversed
+RDt13.completed subClock RDSelfCheck.start
+RDt13.begin coincides RDt13.traversed
+RDt13.traversed coincides RDt13.completed
+RDt14.tr subClock RDFaultOccur
+RDt14.reached coincides RDSelfCheck.start
+RDt14.reached precedes RDt14.begin
+RDt14.tr precedes RDt14.begin
+RDSelfCheck.left precedes RDt14.traversed
+RDt14.completed subClock RDMaintaining.start
+RDt14.begin coincides RDt14.traversed 
+RDt14.traversed coincides RDt14.completed
+RDNInitial.start coincides  RDNInitial.exit
+RDNInitial.exit coincides RDNInitial.left
+RDSelfCheck.start precedes RDSelfCheck.exit
+RDSelfCheck.exit precedes RDSelfCheck.left
+RDSelfCheck.start strictPre RDSelfCheck.do.start
+RDSelfCheck.do.end strictPre RDSelfCheck.exit
+RDSelfCheck.do.completed exclude RDSelfCheck.do.aborted
+RDSelfCheck.do.end = RDSelfCheck.do.completed union RDSelfCheck.do.aborted
+RDSelfCheck.do.start coincides RDSelfCheck.do.end
+RDSelfCheck.do.start coincides RDCheckStatus
+RDSelfCheck.exit coincides RDSelfCheck.left
+RDSelfCheck.exit coincides RDSelfCheck.do.end
+RDMaintaining.start precedes RDMaintaining.exit
+RDMaintaining.exit precedes RDMaintaining.left
+RDMaintaining.start coincides RDMaintaining.ey.start
+RDMaintaining.ey.end strictPre RDMaintaining.exit
+RDMaintaining.ey.start coincides RDMaintaining.ey.end
+RDMaintaining.ey.start coincides SignifyRDMaintaining
+RDMaintaining.start strictPre RDMaintaining.do.start
+RDMaintaining.do.end strictPre RDMaintaining.exit
+RDMaintaining.do.completed exclude RDMaintaining.do.aborted
+RDMaintaining.do.start strictPre RDMaintaining.do.end
+RDMaintaining.do.start coincides RDMaintain.start
+RDMaintaining.do.end coincides RDMaintaining.end
+RDMaintaining.exit coincides RDMaintaining.et.start
+RDMaintaining.left coincides RDMaintaining.et.end
+RDMaintaining.et.start coincides RDMaintaining.et.end
+RDMaintaining.et.start coincides RDReadyConfirm
+RDMaintaining.ey.end precedes RDMaintaining.et.end
+RDMaintaining.do.end precedes RDMaintaining.et.start
+RDt15.tr subClock RDStatusNormal
+RDt15.reached coincides RDMaintaining.start
+RDt15.reached precedes RDt15.begin
+RDt15.tr precedes RDt15.begin
+RDMaintaining.start precedes RDt15.traversed
+RDt15.completed subClock RDInitialization.start
+RDt15.begin coincides RDt15.traversed 
+RDt15.traversed coincides RDt15.completed
+RDt16.tr subClock PowerOff
+RDt16.reached coincides RDMaintaining.start
+RDt16.reached precedes RDt16.begin
+RDt16.tr precedes RDt16.begin
+RDMaintaining.left precedes RDt16.traversed
+RDt16.completed subClock RDFinal.start
+RDt16.begin coincides RDt16.traversed 
+RDt16.traversed coincides RDt16.completed
+RDFinal.start coincides RDFinal.exit
+RDFinal.exit coincides RDFinal.left
+NRInitial.start coincides NRInitial.exit
+NRInitial.start coincides NRInitial.left
+NRt1.tr coincides NRInitial.left
+NRt1.reached coincides NRInitial.start
+NRt1.reached precedes NRt1.begin
+NRt1.tr precedes NRt1.begin
+NRInitial.left precedes NRt1.traversed
+NRt1.completed subClock NRInitialization.start
+NRt1.begin coincides NRt1.traversed
+NRt1.traversed coincides NRt1.completed
+NRInitialization.start precedes NRInitialization.exit
+NRInitialization.exit precedes NRInitialization.left
+NRInitialization.start  coincides NRInitialization.ey.start
+NRInitialization.ey.end strictPre NRInitialization.exit
+NRInitialization.ey.start coincides NRInitialization.ey.end
+NRInitialization.ey.start coincides SelectNRSensorConfig
+NRInitialization.ey.end strictPre NRInitialization.exit
+NRInitialization.start strictPre NRInitialization.do.start
+NRInitialization.do.end strictPre NRInitialization.exit
+NRInitialization.do.completed exclude NRInitialization.do.aborted
+NRInitialization.do.end = NRInitialization.do.completed union NRInitialization.do.aborted
+NRInitialization.do.start strictPre NRInitialization.do.end
+NRInitialization.do.start coincides NRInitialParams.start
+NRInitialization.do.end coincides NRInitialParams.end
+NRInitialization.exit coincides NRInitialization.et.start
+NRInitialization.left coincides NRInitialization.et.end
+NRInitialization.et.start coincides NRInitialization.et.end
+NRInitialization.et.start coincides NRReady
+NRInitialization.ey.end precedes NRInitialization.et.end
+NRt2.tr coincides NRInitialization.left
+NRt2.reached coincides NRInitialization.start
+NRt2.reached precedes NRt2.begin
+NRt2.tr precedes NRt2.begin
+NRInitialization.left precedes NRt2.traversed
+NRt2.completed subClock NRIdle.start
+NRt2.begin coincides NRt2.traversed
+NRt2.traversed coincides NRt2.completed
+NRNormal.start precedes NRNormal.exit
+NRDNormal.exit precedes NRNormal.left
+NRNormal.start strictPre NRNormal.do.start
+NRNormal.do.end strictPre NRNormal.exit
+NRNormal.do.completed exclude NRNormal.do.aborted
+NRNormal.do.end = NRNormal.do.completed union NRNormal.do.aborted
+NRNormal.do.start coincides NRNormal.do.end 
+NRNormal.do.start coincides UpdatePos
+NNUS = NRIdle.start union NRDetecting.start
+NRUS = NNUS union NRPositioning.start
+NIUS = NRUS union NRNInitial.start
+NRNormalInnerStart = NIUS union NRSelfCheck.start
+NNU = NRIdle.exit union NRDetecting.exit
+NRU = NNU union NRPositioning.exit
+NIU = NRU union NRNInitial.exit
+NRNormalInnerExit = NIU union NRSelfCheck.exit
+NRNormal.start precedes NRNormalInnerStart
+NRNormalInnerExit precedes NRNormal.Exit
+NRNormal.start coincides NRNInitial.start
+NRDNormal.exit coincides NRNormal.do.end
+NRt21.tr subClock ArriveTarget
+NRt21.reached coincides NRDNormal.start
+NRt21.reached precedes NRt21.begin
+NRt21.tr precedes NRt21.begin
+NRDNormal.left precedes NRDNormal.traversed
+NRt21.completed subClock NRDNormal.start 
+NRt21.begin coincides NRt21.traversed 
+NRt21.traversed coincides NRt21.completed
+NRIdle.start precedes NRIdle.exit
+NRIdle.exit precedes NRIdle.left
+NRIdle.start strictPre NRIdle.do.start
+NRIdle.do.end strictPre NRIdle.exit
+NRIdle.do.completed exclude NRIdle.do.aborted
+NRIdle.do.end = NRIdle.do.completed union NRIdle.do.aborted
+NRIdle.do.start coincides NRIdle.do.end 
+NRIdle.do.start coincides KeepMap
+NRIdle.exit coincies NRIdle.do.end
+NRIdle.exit coincides NRIdle.left 
+NRt3.tr subClock noMap
+NRt3.reached coincides NRInitialization.start
+NRt3.reached precedes NRt3.begin
+NRt3.tr precedes NRt3.begin
+NRInitialization.left precedes NRt3.traversed
+NRt3.completed subClock BuildMap.start
+NRt3.begin coincides NRt3.traversed 
+NRt3.traversed coincides NRt3.completed
+BuildMap.start precedes BuildMap.exit
+BuildMap.exit precedes BuildMap.left
+BuildMap.start  coincides BuildMap.ey.start
+BuildMap.ey.end strictPre BuildMap.exit
+BuildMap.ey.start coincides BuildMap.ey.end
+BuildMap.ey.start coincides connectSLAM
+BuildMap.ey.end strictPre BuildMap.exit
+BuildMap.start strictPre BuildMap.do.start
+BuildMap.do.end strictPre BuildMap.exit
+BuildMap.do.completed exclude BuildMap.do.aborted
+BuildMap.do.end = BuildMap.do.completed union BuildMap.do.aborted
+BuildMap.do.start strictPre BuildMap.do.end
+BuildMap.do.start coincides SLAMalg.start
+BuildMap.do.end coincides SLAMalg.end
+BuildMap.exit coincides BuildMap.left
+BuildMap.exit = BuildMap.ey.end sup BuildMap.do.end
+NRt4.tr subClock MapFinish
+NRt4.reached coincides BuildMap.start
+NRt4.reached precedes NRt4.begin
+NRt4.tr precedes NRt4.begin
+BuildMap.left precedes NRt4.traversed
+NRt4.completed subClock NRInitialization.start
+NRt4.begin coincides NRt4.traversed 
+NRt4.traversed coincides NRt4.completed
+NRt5.tr subClock MapFail
+NRt5.reached coincides BuildMap.start
+NRt5.reached precedes NRt5.begin
+NRt5.tr precedes NRt5.begin
+BuildMap.left precedes NRt5.traversed
+NRt5.completed subClock BuildMap.start 
+NRt5.begin coincides NRt5.traversed 
+NRt5.traversed coincides NRt5.completed
+NRt6.tr subClock connectSLAMFail
+NRt6.reached coincides BuildMap.start
+NRt6.reached precedes NRt6.begin
+NRt6.tr precedes NRt6.begin
+BuildMap.left precedes NRt6.traversed
+NRt6.completed subClock BuildMap.start 
+NRt6.begin coincides NRt6.traversed 
+NRt6.traversed coincides NRt6.completed
+NRt7.tr subClock ReceiveTraj
+NRt7.reached coincides NRIdle.start
+NRt7.reached precedes NRt7.begin
+NRt7.tr precedes NRt7.begin
+NRIdle.left precedes NRt7.traversed
+NRt7.completed subClock NRFork.start 
+NRt7.begin coincides NRt7.traversed 
+NRt7.traversed coincides NRt7.completed
+NRFork.start coincides NRFork.exit
+NRFork.exit coincides NRFork.left
+NRt8.tr coincides NRFork.left
+NRt8.reached coincides NRFork.start
+NRt8.reached precedes NRt8.begin
+NRt8.tr precedes NRt8.begin
+NRFork.left precedes NRt8.traversed
+NRt8.completed subClock NRDetecting.start
+NRt8.begin coincides NRt8.traversed
+NRt8.traversed coincides NRt8.completed
+NRt9.tr coincides NRFork.left
+NRt9.reached coincides NRFork.start
+NRt9.reached precedes NRt9.begin
+NRt9.tr precedes NRt9.begin
+NRFork.left precedes NRt9.traversed
+NRt9.completed subClock NRPositioning.start
+NRt9.begin coincides NRt9.traversed
+NRt9.traversed coincides NRt9.completed
+NRDetecting.start precedes NRDetecting.exit
+NRDetecting.exit precedes NRDetecting.left
+NRDetecting.start strictPre NRDetecting.do.start
+NRDetecting.do.end strictPre NRDetecting.exit
+NRDetecting.do.completed exclude NRDetecting.do.aborted
+NRDetecting.do.end = NRDetecting.do.completed union NRDetecting.do.aborted
+NRDetecting.do.start strictPre NRDetecting.do.end 
+NRDetecting.do.start coincides Detect.start
+NRDetecting.do.end coincides Detect.end
+NRDetecting.exit coincies NRDetecting.do.end
+NRDetecting.exit coincides NRDetecting.left 
+NRPositioning.start precedes NRPositioning.exit
+NRPositioning.exit precedes NRPositioning.left
+NRPositioning.start strictPre NRPositioning.do.start
+NRPositioning.do.end strictPre NRPositioning.exit
+NRPositioning.do.completed exclude NRPositioning.do.aborted
+NRPositioning.do.end = NRPositioning.do.completed union NRPositioning.do.aborted
+NRPositioning.do.start strictPre NRPositioning.do.end 
+NRPositioning.do.start coincides Positioning.start
+NRPositioning.do.end coincides Positioning.end
+NRPositioning.exit coincies NRPositioning.do.end
+NRPositioning.exit coincides NRPositioning.left 
+NRt10.tr subClock ConfirmArrival
+NRt10.reached coincides NRPositioning.start
+NRt10.reached precedes NRt10.begin
+NRt10.tr precedes NRt10.begin
+NRPositioning.left precedes NRt10.traversed
+NRt10.completed subClock NRJoin.start 
+NRt10.begin coincides NRt10.traversed 
+NRt10.traversed coincides NRt10.completed
+NRt11.tr subClock ConfirmArrival
+NRt11.reached coincides NRDetecting.start
+NRt11.reached precedes NRt11.begin
+NRt11.tr precedes NRt11.begin
+NRDetecting.left precedes NRt11.traversed
+NRt11.completed subClock NRJoin.start 
+NRt11.begin coincides NRt11.traversed 
+NRt11.traversed coincides NRt11.completed
+NRJoin.start coincides NRJoin.exit
+NRJoin.exit coincides NRJoin.left
+NRt12.tr coincides NRJoin.left
+NRt12.reached coincides NRJoin.start
+NRt12.reached precedes NRt12.begin
+NRt12.tr precedes NRt12.begin
+NRJoin.left precedes NRt12.traversed
+NRt12.completed subClock RDIdle.start
+NRt12.begin coincides NRt12.traversed
+NRt12.traversed coincides NRt12.completed
+NRNInitial.start coincides NRNInitial.exit
+NRNInitial.exit coincides NRNInitial.left
+NRt13.tr coincides NRNInitial.left
+NRt13.reached coincides NRNInitial.start
+NRt13.reached precedes NRt13.begin
+NRt13.tr precedes NRt13.begin
+NRNInitial.left precedes NRt12.traversed
+NRt13.completed subClock RDSelfCheck.start
+NRt13.begin coincides NRt13.traversed
+NRt13.traversed coincides NRt13.completed
+NRSelfCheck.start precedes NRSelfCheck.exit
+NRSelfCheck.exit precedes NRSelfCheck.left
+NRSelfCheck.start strictPre NRSelfCheck.do.start
+NRSelfCheck.do.end strictPre NRSelfCheck.exit
+NRSelfCheck.do.completed exclude NRSelfCheck.do.aborted
+NRSelfCheck.do.end = NRSelfCheck.do.completed union NRSelfCheck.do.aborted
+NRSelfCheck.do.start coincides NRSelfCheck.do.end 
+NRSelfCheck.do.start coincides NRCheckStatus
+NRSelfCheck.exit coincies NRSelfCheck.do.end
+NRSelfCheck.exit coincides NRSelfCheck.left 
+NRt14.tr subClock NRFaultOccur
+NRt14.reached coincides NRSelfCheck.start
+NRt14.reached precedes NRt14.begin
+NRt14.tr precedes NRt14.begin
+NRSelfCheck.left precedes NRt14.traversed
+NRt14.completed subClock NRMaintaining.start 
+NRt14.begin coincides NRt14.traversed 
+NRt14.traversed coincides NRt14.completed
+NRMaintaining.start precedes NRMaintaining.exit
+NRMaintaining.exit precedes NRMaintaining.left
+NRMaintaining.start coincides NRMaintaining.ey.start
+NRMaintaining.ey.end strictPre NRMaintaining.exit
+NRMaintaining.ey.start coincides NRMaintaining.ey.end
+NRMaintaining.ey.start coincides SignifyNRMaintaining
+NRMaintaining.start strictPre NRMaintaining.do.start
+NRMaintaining.do.end strictPre NRMaintaining.exit
+NRMaintaining.do.completed exclude NRMaintaining.do.aborted
+NRMaintaining.do.start strictPre NRMaintaining.do.end
+NRMaintaining.do.start coincides NRMaintain.start
+NRMaintaining.do.end coincides NRMaintaining.end
+NRMaintaining.exit coincides NRMaintaining.et.start
+NRMaintaining.left coincides NRMaintaining.et.end
+NRMaintaining.et.start coincides NRMaintaining.et.end
+NRMaintaining.et.start coincides NRReadyConfirm
+NRMaintaining.ey.end precedes NRMaintaining.et.end
+NRMaintaining.do.end precedes NRMaintaining.et.start
+NRt15.tr subClock MapMalFunction
+NRt15.reached coincides BuildMap.start
+NRt15.reached precedes NRt15.begin
+NRt15.tr precedes NRt15.begin
+BuildMap.left precedes NRt15.traversed
+NRt15.completed subClock NRMaintaining.start 
+NRt15.begin coincides NRt15.traversed 
+NRt15.traversed coincides NRt15.completed
+NRt16.tr subClock PowerOff
+NRt16.reached coincides NRIdle.start
+NRt16.reached precedes NRt16.begin
+NRt16.tr precedes NRt16.begin
+NRIdle.left precedes NRt16.traversed
+NRt16.completed subClock NRFinal.start 
+NRt16.begin coincides NRt16.traversed 
+NRt16.traversed coincides NRt16.completed
+NRt17.tr subClock NRSensorFault
+NRt17.reached coincides NRInitialization.start
+NRt17.reached precedes NRt17.begin
+NRt17.tr precedes NRt17.begin
+NRInitialization.left precedes NRt17.traversed
+NRt17.completed subClock NRMaintaining.start 
+NRt17.begin coincides NRt17.traversed 
+NRt17.traversed coincides NRt17.completed
+NRt18.tr subClock PowerOff
+NRt18.reached coincides NRInitialization.start
+NRt18.reached precedes NRt18.begin
+NRt18.tr precedes NRt18.begin
+NRInitialization.left precedes NRt18.traversed
+NRt18.completed subClock NRFinal.start 
+NRt18.begin coincides NRt18.traversed 
+NRt18.traversed coincides NRt18.completed
+NRt19.tr subClock NRStatusNormal
+NRt19.reached coincides NRMaintaining.start
+NRt19.reached precedes NRt19.begin
+NRt19.tr precedes NRt19.begin
+NRMaintaining.left precedes NRt19.traversed
+NRt19.completed subClock NRInitialization.start 
+NRt19.begin coincides NRt19.traversed 
+NRt19.traversed coincides NRt19.completed
+NRt20.tr subClock NRStatusNormal
+NRt20.reached coincides NRMaintaining.start
+NRt20.reached precedes NRt20.begin
+NRt20.tr precedes NRt20.begin
+NRMaintaining.left precedes NRt20.traversed
+NRt20.completed subClock NRFinal.start 
+NRt20.begin coincides NRt20.traversed 
+NRt20.traversed coincides NRt20.completed
+TKInitial.start coincides TKInitial.exit
+TKInitial.start coincides TKInitial.left
+TRt1.tr subClock createReg
+TRt1.reached coincides TKInitial.start
+TRt1.reached precedes TRt1.begin
+TRt1.tr precedes TRt1.begin
+TKInitial.left precedes TRt1.traversed
+TRt1.completed subClock regular.start 
+TRt1.begin coincides TRt1.traversed 
+TRt1.traversed coincides TRt1.completed
+TRt2.tr subClock createUrg
+TRt2.reached coincides TRInitial.start
+TRt2.reached precedes TRt2.begin
+TRt2.tr precedes TRt2.begin
+TRInitial.left precedes TRt2.traversed
+TRt2.completed subClock urgent.start 
+TRt2.begin coincides TRt2.traversed 
+TRt2.traversed coincides TRt2.completed
+notScheduled.start precedes notScheduled.exit
+notScheduled.exit precedes notScheduled.left
+notScheduled.start strictPre notScheduled.do.start
+notScheduled.do.end strictPre notScheduled.exit
+notScheduled.do.completed exclude notScheduled.do.aborted
+notScheduled.do.end =notScheduled.do.completed union notScheduled.do.aborted
+notScheduled.do.start coincides notScheduled.do.end
+notScheduled.do.start coincides timerTick
+notScheduled.exit coincides notScheduled.left
+notScheduled.exit coincides notScheduled.do.end
+notScheduledInnerStart = regular.start union urgent.start 
+notScheduledInnerExit = regular.exit union urgent.exit 
+notScheduled.start precedes notScheduledInnerStart
+notScheduledInnerExit precedes notScheduled.Exit
+regular.start precedes regular.exit
+regular.exit precedes regular.left
+regular.start coincides regular.ey.start
+regular.ey.end strictPre regular.exit
+regular.ey.start coincides regular.ey.end
+regular.ey.start coincides regStart
+regular.exit coincides regular.left
+regular.exit coincides regular.ey.end 
+urgent.start precedes urgent.exit
+urgent.exit precedes urgent.left
+urgent.start coincides urgent.ey.start
+urgent.ey.end strictPre urgent.exit
+urgent.ey.start coincides urgent.ey.end
+urgent.ey.start coincides urgStart
+urgent.exit coincides urgent.left
+urgent.exit coincides urgent.ey.end 
+TRt3.tr subClock becomeUrg
+TRt3.reached coincides regular.start
+TRt3.reached precedes TRt3.begin
+TRt3.tr precedes TRt3.begin
+regular.left precedes TRt3.traversed
+TRt3.completed subClock urgent.start 
+TRt3.begin coincides TRt3.traversed 
+TRt3.traversed coincides TRt3.completed
+scheduled.start precedes scheduled.exit
+scheduled.exit precedes scheduled.left
+scheduledInnerStart = notYetInDelivery.start union inDelivery.start 
+scheduledInnerExit = notYetInDelivery.exit union inDelivery.exit 
+scheduled.start precedes scheduledInnerStart
+scheduledInnerExit precedes scheduled.Exit
+TRt4.tr subClock schedReg
+TRt4.reached coincides regular.start
+TRt4.reached precedes TRt4.begin
+TRt4.tr precedes TRt4.begin
+regular.left precedes TRt4.traversed
+TRt4.completed subClock notYetInDelivery.start 
+TRt4.begin coincides TRt4.traversed 
+TRt4.traversed coincides TRt4.completed
+TRt5.tr subClock cancelReg
+TRt5.reached coincides regular.start
+TRt5.reached precedes TRt5.begin
+TRt5.tr precedes TRt5.begin
+regular.left precedes TRt5.traversed
+TRt5.completed subClock deleted.start 
+TRt5.begin coincides TRt5.traversed 
+TRt5.traversed coincides TRt5.completed
+TRt6.tr subClock schedUrg
+TRt6.reached coincides urgent.start
+TRt6.reached precedes TRt6.begin
+TRt6.tr precedes TRt6.begin
+urgent.left precedes TRt6.traversed
+TRt6.completed subClock notYetInDelivery.start 
+TRt6.begin coincides TRt6.traversed 
+TRt6.traversed coincides TRt6.completed
+TRt7.tr subClock cancelUrg
+TRt7.reached coincides urgent.start
+TRt7.reached precedes TRt7.begin
+TRt7.tr precedes TRt7.begin
+urgent.left precedes TRt7.traversed
+TRt7.completed subClock deleted.start 
+TRt7.begin coincides TRt7.traversed 
+TRt7.traversed coincides TRt7.completed
+inQueue.start precedes inQueue.exit
+inQueue.exit precedes inQueue.left
+inDelivery.start precedes inDelivery.exit
+inDelivery.exit precedes inDelivery.left
+inDelivery.start coincides inDelivery.ey.start
+inDelivery.ey.end strictPre inDelivery.exit
+inDelivery.ey.start coincides inDelivery.ey.end
+inDelivery.ey.start coincides dlyStart
+inDelivery.exit coincides inDelivery.left
+inDelivery.exit coincides inDelivery.ey.end
+TRt8.tr subClock turn
+TRt8.reached coincides inQueue.start
+TRt8.reached precedes TRt8.begin
+TRt8.tr precedes TRt8.begin
+inQueue.left precedes TRt8.traversed
+TRt8.completed subClock deleted.start 
+TRt8.begin coincides TRt8.traversed 
+TRt8.traversed coincides TRt8.completed
+TRt9.tr subClock timeout
+TRt9.reached coincides inQueue.start
+TRt9.reached precedes TRt9.begin
+TRt9.tr precedes TRt9.begin
+inQueue.left precedes TRt9.traversed
+TRt9.completed subClock deleted.start 
+TRt9.begin coincides TRt9.traversed 
+TRt9.traversed coincides TRt9.completed
+TRt10.tr subClock ConfirmReceive
+TRt10.reached coincides inDelivery.start
+TRt10.reached precedes TRt10.begin
+TRt10.tr precedes TRt10.begin
+inDelivery.left precedes TRt10.traversed
+TRt10.completed subClock deleted.start 
+TRt10.begin coincides TRt10.traversed 
+TRt10.traversed coincides TRt10.completed
+TRt11.tr subClock ConfirmLost
+TRt11.reached coincides inDelivery.start
+TRt11.reached precedes TRt11.begin
+TRt11.tr precedes TRt11.begin
+inDelivery.left precedes TRt11.traversed
+TRt11.completed subClock deleted.start 
+TRt11.begin coincides TRt11.traversed 
+TRt11.traversed coincides TRt11.completed
+deleted.start precedes deleted.exit
+deleted.exit precedes deleted.left
+deleted.start coincides deleted.ey.start
+deleted.ey.end strictPre deleted.exit
+deleted.ey.start coincides deleted.ey.end
+deleted.ey.start coincides deleteTask
+deleted.exit coincides deleted.ey.end 
+deleted.exit coincides deleted.left
+regular.exit = regular.ey.end sup regular.do.end
+TRt12.tr coincides deleted.left
+TRt12.reached coincides deleted.start
+TRt12.reached precedes NRt12.begin
+TRt12.tr precedes TRt12.begin
+deleted.left precedes TRt12.traversed
+TRt12.completed subClock TKFinal.start
+TRt12.begin coincides TRt12.traversed
+TRt12.traversed coincides TRt12.completed
+TKFinal.start coincides TKFinal.exit
+TKFinal.exit coincides TKFinal.left
+SLInitial.start coincides SLInitial.exit
+SLInitial.start coincides SLInitial.left
+TKt1.tr coincides TKInitial.left
+TKt1.reached coincides TKInitial.start
+TKt1.reached precedes TKt1.begin
+TKt1.tr precedes TKt1.begin
+TKInitial.left precedes TKt1.traversed
+TKt1.completed subClock TKIdle.start
+TKt1.begin coincides TKt1.traversed
+TKt1.traversed coincides TKt1.completed
+SLt2.tr subClock TriggerSchedule
+SLt2.reached coincides TKIdle.start
+SLt2.reached precedes SLt2.begin
+SLt2.tr precedes SLt2.begin
+TKIdle.left precedes SLt2.traversed
+TKIdle.start precedes TKIdle.exit
+TKIdle.exit precedes TKIdle.left
+SLt2.completed subClock CheckWaiting.start 
+SLt2.begin coincides SLt2.traversed 
+SLt2.traversed coincides SLt2.completed
+Scheduling.start precedes Scheduling.exit
+Scheduling.exit precedes Scheduling.left
+SchedulingInnerStartU = CheckWaiting.start union AddSchedule.start 
+SchedulingInnerStart = SchedulingInnerStartU union SendSchedule.start
+SchedulingInnerExitU = CheckWaiting.exit union AddSchedule.exit 
+SchedulingInnerExit = SchedulingInnerExitU union SendSchedule.exit
+Scheduling.start precedes SchedulingInnerStart
+SchedulingInnerExit precedes Scheduling.Exit
+Scheduling.start coincides Scheduling.ey.start
+Scheduling.ey.end strictPre Scheduling.exit
+Scheduling.ey.start coincides Scheduling.ey.end
+Scheduling.ey.start coincides schdStart
+Scheduling.exit coincides Scheduling.et.start
+Scheduling.left coincides Scheduling.et.end
+Scheduling.et.start coincides Scheduling.et.end
+Scheduling.et.start coincides schdEnd
+Scheduling.ey.end precedes Scheduling.et.start
+CheckWaiting.start precedes CheckWaiting.exit
+CheckWaiting.exit precedes CheckWaiting.left
+CheckWaiting.exit coincides CheckWaiting.et.start
+CheckWaiting.left coincides CheckWaiting.et.end
+CheckWaiting.et.start coincides CheckWaiting.et.end
+CheckWaiting.et.start coincides waitingStatus
+AddSchedule.start precedes AddSchedule.exit
+AddSchedule.exit precedes AddSchedule.left
+AddSchedule.start strictPre AddSchedule.do.start
+AddSchedule.do.end strictPre AddSchedule.exit
+AddSchedule.do.completed exclude AddSchedule.do.aborted
+AddSchedule.do.end = AddSchedule.do.completed union AddSchedule.do.aborted
+AddSchedule.do.start coincides AddSchedule.do.end
+AddSchedule.do.start coincides updateQueue
+AddSchedule.exit coincides AddSchedule.left
+AddSchedule.exit coincides AddSchedule.do.end
+SLt3.tr subClock onlyReg
+SLt3.reached coincides CheckWaiting.start
+SLt3.reached precedes SLt3.begin
+SLt3.tr precedes SLt3.begin
+CheckWaiting.left precedes SLt3.traversed
+SLt3.completed subClock AddSchedule.start 
+SLt3.begin coincides SLt3.traversed 
+SLt3.traversed coincides SLt3.completed
+SLt3.traversed coincides SLt3.ac.begin
+SLt3.ac.begin coincides SLt3.ac.end
+SLt3.ac.begin subClock schdReg
+SLt3.ac.end precedes SLt3.completed
+SLt4.tr subClock hasBoth
+SLt4.reached coincides CheckWaiting.start
+SLt4.reached precedes SLt4.begin
+SLt4.tr precedes SLt4.begin
+CheckWaiting.left precedes SLt4.traversed
+SLt4.completed subClock AddSchedule.start 
+SLt4.begin coincides SLt4.traversed 
+SLt4.traversed coincides SLt4.completed
+SLt4.traversed coincides SLt4.ac.begin
+SLt4.ac.begin coincides SLt4.ac.end
+SLt4.ac.begin subClock schdUrg
+SLt4.ac.end precedes SLt4.completed
+SLt5.tr subClock onlyUrg
+SLt5.reached coincides CheckWaiting.start
+SLt5.reached precedes SLt5.begin
+SLt5.tr precedes SLt5.begin
+CheckWaiting.left precedes SLt5.traversed
+SLt5.completed subClock AddSchedule.start 
+SLt5.begin coincides SLt5.traversed 
+SLt5.traversed coincides SLt5.completed
+SLt5.traversed coincides SLt5.ac.begin
+SLt5.ac.begin coincides SLt5.ac.end
+SLt5.ac.begin subClock schdUrg
+SLt5.ac.end precedes SLt5.completed
+SLt6.tr subClock deleteTask
+SLt6.reached coincides AddSchedule.start
+SLt6.reached precedes SLt6.begin
+SLt6.tr precedes SLt6.begin
+AddSchedule.left precedes SLt6.traversed
+SLt6.completed subClock SendSchedule.start 
+SLt6.begin coincides SLt6.traversed 
+SLt6.traversed coincides SLt6.completed
+SLt6.traversed coincides SLt6.ac.begin
+SLt6.ac.begin coincides SLt6.ac.end
+SLt6.ac.begin subClock turn
+SLt6.ac.end precedes SLt6.completed
+SendSchedule.start precedes SendSchedule.exit
+SendSchedule.exit precedes SendSchedule.left
+SendSchedule.start strictPre SendSchedule.do.start
+SendSchedule.do.end strictPre SendSchedule.exit
+SendSchedule.do.completed exclude SendSchedule.do.aborted
+SendSchedule.do.end = SendSchedule.do.completed union SendSchedule.do.aborted
+SendSchedule.do.start coincides SendSchedule.do.end
+SendSchedule.do.start coincides popQueue
+SendSchedule.exit coincides SendSchedule.left
+SendSchedule.exit coincides SendSchedule.do.end
+SLt7.tr coincides SendSchedule.left
+SLt7.reached coincides SendSchedule.start
+SLt7.reached precedes SLt7.begin
+SLt7.tr precedes SLt7.begin
+SendSchedule.left precedes SLt7.traversed
+SLt7.completed subClock TKIdle.start
+SLt7.begin coincides SLt7.traversed
+SLt7.traversed coincides SLt7.completed
+SLt8.tr subClock PowerOff
+SLt8.reached coincides TKIdle.start
+SLt8.reached precedes SLt8.begin
+SLt8.tr precedes SLt8.begin
+TKIdle.left precedes SLt8.traversed
+SLt8.completed subClock SLFinal.start 
+SLt8.begin coincides SLt8.traversed 
+SLt8.traversed coincides SLt8.completed
+SLFinal.start coincides SLFinal.exit
+SLFinal.exit coincides SLFinal.left
+CFInitial.start coincides CFInitial.exit
+CFInitial.start coincides CFInitial.left
+CFt2.tr subClock urgInDly
+CFt2.reached coincides CFInitial.start
+CFt2.reached precedes CFt2.begin
+CFt2.tr precedes CFt2.begin
+CFInitial.left precedes CFt2.traversed
+CFt2.completed subClock UrgConfig.start 
+CFt2.begin coincides CFt2.traversed 
+CFt2.traversed coincides CFt2.completed
+CFt1.tr subClock regInDly
+CFt1.reached coincides CFInitial.start
+CFt1.reached precedes CFt1.begin
+CFt1.tr precedes CFt1.begin
+CFInitial.left precedes CFt1.traversed
+CFt1.completed subClock RegConfig.start 
+CFt1.begin coincides CFt1.traversed 
+CFt1.traversed coincides CFt1.completed
+UrgConfig.start precedes UrgConfig.exit
+UrgConfig.exit precedes UrgConfig.left
+UrgConfig.exit coincides UrgConfig.et.start
+UrgConfig.left coincides UrgConfig.et.end
+UrgConfig.et.start coincides UrgConfig.et.end
+UrgConfig.et.start coincides urgConfStart
+UrgConfig.exit coincides UrgConfig.et.start
+UrgConfig.left coincides UrgConfig.et.end
+UrgConfig.et.start coincides UrgConfig.et.end
+UrgConfig.et.start coincides urgConfEnd
+RegConfig.start precedes RegConfig.exit
+RegConfig.exit precedes RegConfig.left
+RegConfig.exit coincides RegConfig.et.start
+RegConfig.left coincides RegConfig.et.end
+RegConfig.et.start coincides RegConfig.et.end
+RegConfig.et.start coincides regConfStart
+RegConfig.exit coincides RegConfig.et.start
+RegConfig.left coincides RegConfig.et.end
+RegConfig.et.start coincides RegConfig.et.end
+RegConfig.et.start coincides regConfEnd
+CFFinal.start precedes CFFinal.exit
+CFFinal.exit precedes CFFinal.left
+CFt3.tr subClock regInDly
+CFt3.reached coincides UrgConfig.start
+CFt3.reached precedes CFt3.begin
+CFt3.tr precedes CFt3.begin
+UrgConfig.left precedes CFt3.traversed
+CFt3.completed subClock RegConfig.start 
+CFt3.begin coincides CFt3.traversed 
+CFt3.traversed coincides CFt3.completed
+CFt4.tr subClock urgInDly
+CFt4.reached coincides RegConfig.start
+CFt4.reached precedes CFt4.begin
+CFt4.tr precedes CFt4.begin
+RegConfig.left precedes CFt4.traversed
+CFt4.completed subClock UrgConfig.start 
+CFt4.begin coincides CFt4.traversed 
+CFt4.traversed coincides CFt4.completed
+CFt5.tr subClock stopDly
+CFt5.reached coincides UrgConfig.start
+CFt5.reached precedes CFt5.begin
+CFt5.tr precedes CFt5.begin
+UrgConfig.start precedes CFt5.traversed
+CFt5.completed subClock CFFinal.start
+CFt5.begin coincides CFt5.traversed 
+CFt5.traversed coincides CFt5.completed
+CFt6.tr subClock stopDly
+CFt6.reached coincides RegConfig.start
+CFt6.reached precedes CFt6.begin
+CFt6.tr precedes CFt6.begin
+RegConfig.start precedes CFt6.traversed
+CFt6.completed subClock CFFinal.start
+CFt6.begin coincides CFt6.traversed 
+CFt6.traversed coincides CFt6.completed
+TPInitial strictPre ReceiveSchedule
+ReceiveSchedule strictPre CheckMap
+CheckMap strictPre PathSearch.start
+PathSearch.start strictPre PathSearch.end
+PathSearch.end strictPre SendTraj
+SendTraj strictPre TPFinal
+UTInitial strictPre ObstacleDetected
+ObstacleDetected strictPre UpdateMap
+UpdateMap strictPre UpdatePath.start
+UpdatePath.start strictPre UpdatePath.end
+UpdatePath.end strictPre UTFinal
+Accounter_DecideUpdates_snd  strictPre  DecideUpdates
+DecideUpdates  strictPre  Accounter_DecideUpdates_rec
+CommModule_RountineConn_snd  strictPre  RountineConn.start
+RountineConn.start  strictPre RountineConn.end
+RountineConn.end strictPre  CMSCom_RountineConn_rec
+CommModule_rountineConn_snd strictPre routineConn.start
+routineConn.start strictPre rountine.end
+routineConn.end strictPre CMSCom_rountineConn_rec
+CMSCom_rountineConn_rec  strictPre  CMSCom_startDConnFail_snd
+CMSCom_startDConnFail_snd strictPre startDConnFail
+startDConnFail strictPre CommModule_startDConnFail_rec
+CommModule_startConnFail_rec  strictPre  CommModule_reConn_snd
+CommModule_reConn_snd strictPre reConn.start
+reConn.start  strictPre  reConn.end
+reConn.end  strictPre  CMSCom_reConn_rec
+ruloop1x=CMSCom_reConn_rec filteredBy 0001
+ruloop1x  strictPre  alt1begin
+rualt1begin = CommModule_SendUpdates_snd union CommModule_ComFault_snd
+rualt1end=CommModule_ComFault_rec union CommModule_updateFinish_rec
+rualt1begin alternate rualt1end
+CommModule_SendUpdates_snd exclude CommModule_CommFault_snd
+startConnSucc coincides CommModule_SendUpdates_snd
+CommFault  coincides CommModule_CommFault_snd
+CommModule_SendUpdates_snd  strictPre  SendUpdates
+SendUpdates  strictPre  CMSCom_SendUpdates_rec
+CMSCom_SendUpdates_rec  strictPre  CMSCom_dataLost_snd
+CMSCom_dataLost_snd  strictPre  dataLost
+dataLost  strictPre  CommModule_dataLost_rec
+CommModule_dataLost_rec strictPre CommModule_reSendUpdates_snd
+CommModule_reSendUpdates_snd  strictPre  reSendUpdates
+reSendUpdates  strictPre  CMSCom_reSendUpdates_rec
+ruloop2x=CMSCom_reSendUpdates_rec filteredBy 0001
+ruloop2x  strictPre  CMSCom_ParseData_snd
+CMSCom_ParseData_snd  strictPre  ParseData.start
+ParseData.start  strictPre  ParseData.end
+ParseData.end strictPre CMSRU_ParseData_rec
+CMSRU_ParseData_rec  strictPre  CMSRU_RUDecision_snd
+CMSRU_RUDecision_snd strictPre RUDecision
+RUDecision strictPre CMSRU_RUDecision_rec
+CMSRU_RUDecision_rec strictPre CMSRU_ConnDatabase_snd
+CMSRU_ConnDatabase_snd strictPre ConnDatabase.start
+ConnDatabase.start strictPre ConnDatabase.end
+ConnDatabase.end strictPre Database_ConnDatabase_rec
+Database_ConnDatabase_rec strictPre CMSRU_ConnDatabaseFail_snd
+CMSRU_ConnDatabaseFail_snd strictPre ConnDatabaseFail
+ConnDatabaseFail  strictPre  CMSRU_ConnDatabaseFail_rec
+CMSRU_ConnDatabaseFail_rec  strictPre  CMSRU_reConnDatabase_snd
+CMSRU_reConnDatabase_snd  strictPre  reConnDatabase.start
+reConnDatabase.start strictPre reConnDatabase.end
+reConnDatabase.end strictPre Database_reConnDatabase_rec
+ruloop3X=Database_reConnDatabase_rec filteredBy 0001
+ruloop3X  strictPre  rualt2begin
+rualt2begin=DConntimeout union DConnSucc
+rualt2end=CMSUI_DisplayDatabaseConnFail_rec union Database_CloseDConn_rec
+rualt2begin alternate rualt2end
+DConnFeedBack = DatabaseConnFault union DConnSucc
+DConntimeout coincides CMSRU_DatabaseConnFault_snd
+CMSRU_DatabaseConnFault_snd strictPre  DatabaseConnFault
+DatabaseConnFault  strictPre  CMSUI_DatabaseConnFault_rec
+CMSUI_DatabaseConnFault_rec strictPre CMSUI_DisplayDatabaseConnFail_snd
+CMSUI_DisplayDatabaseConnFail_snd strictPre DisplayDatabaseConnFail
+DisplayDatabaseConnFail strictPre CMSUI_DisplayDatabaseConnFail_rec
+DConnSucc coincides CMSRU_Update_snd
+CMSRU_Update_snd  strictPre  Update.start
+Update.start  strictPre Update.end
+Update.end strictPre Database_Update_rec
+Database_Update_rec strictPre CMSRU_closeConn_start
+CMSRU_closeConn_start strictPre closeConn
+CloseDConn strictPre Database_CloseDConn_rec
+rualt2end  strictPre  CMSRU_dataUpdateFinish_snd
+CMSRU_dataUpdateFinish_snd  strictPre  dataUpdateFinish
+dataUpdateFinish  strictPre  CMSCom_dataUpdateFinish_rec
+CMSCom_dataUpdateFinish_rec  strictPre CMSCom_UFFeedBack_snd
+CMSCom_UFFeedBack_snd strictPre UFFeedBack
+UFFeedBack  strictPre  ComModule_UFFeedBack_rec
+CommModule_UFFeedBack_rec strictPre CommModule_updateFinish_snd
+CommModule_updateFinish_snd strictPre updateFinish
+updateFinish  strictPre CommModule_updateFinish_rec
+Admin_AdminLogIn_snd  strictPre  AdminLogIn
+AdminLogIn  strictPre  CMSUI_AdminLogIn_rec
+CMSUI_AdminLogIn_rec  strictPre  CMSUI_AdminCheck_snd
+CMSUI_AdminCheck_snd  strictPre  AdminCheck.start
+AdminCheck.start  strictPre AdminCheck.end
+AdminCheck.end  strictPre  CMSDM_AdminCheck_rec
+CMSDM_AdminCheck_rec strictPre CMSDM_CheckAdminTable_snd
+CMSDM_CheckAdminTable_snd strictPre CheckAdminTable.start
+CheckAdminTable.start  strictPre CheckAdminTable.end
+CheckAdminTable.end strictPre Database_CheckAdminTable_rec
+Database_CheckAdminTable_rec  strictPre  dmalt1begin
+dmalt1begin = CMSDM_AdminValid_snd union CMSDM_AdmininValid_snd
+CMSDM_AdminValid_snd exclude CMSDM_AdmininValid_snd
+dmalt1end=Admin_AdminLoginSucc_rec union Admin_AdminLoginReject_rec
+dmalt1begin alternate dmalt1end
+AdminValid coincides CMSDM_AdminValid_snd
+AdmininValid coincides CMSDM_AdmininValid_snd
+CMSDM_AdminValid_snd  strictPre  AdminValid
+AdminValid  strictPre  CMSUI_AdminValid_rec
+CMSUI_AdminValid_rec  strictPre  CMSUI_AdminLoginSucc_snd
+CMSUI_AdminLoginSucc_snd  strictPre  AdminLoginSucc
+AdminLoginSucc  strictPre  Admin_AdminLoginSucc_rec
+Server_AdmininValid_snd  strictPre  AdmininValid
+AdmininValid  strictPre  CMSUI_AdmininValid_rec
+CMSUI_AdmininValid_rec  strictPre  CMSUI_AdminLoginReject_snd
+CMSUI_AdminLoginReject_snd  strictPre  AdminLoginReject
+AdminLoginReject strictPre  Admin_AdminLoginReject_rec
+dmalt1end  strictPre  Admin_getData_snd
+Admin_getData_snd  strictPre  getData
+getData  strictPre  CMSUI_getData_rec
+CMSUI_getData_rec  strictPre  CMSUI_AdminAuthoCheck_snd
+CMSUI_AdminAuthoCheck_snd  strictPre  AdminAuthoCheck.start
+AdminAuthoCheck.start  strictPre  AdminAuthoCheck.end
+AdminAuthoCheck.end  strictPre  CMSDM_AdminAuthoCheck_rec
+CMSDM_AdminAuthoCheck_rec  strictPre  CMSDM_CheckAdminTable_snd
+CMSDM_CheckAdminTable_snd strictPre CheckAdminTable.start
+CheckAdminTable.start strictPre CheckAdminTable.end
+CheckAdminTable.end strictPre Database_CheckAdminTable_rec
+Database_CheckAdminTable_rec strictPre  dmalt2begin
+dmalt2begin = CMSDM_PullData_snd union CMSDM_DataRequestReject_snd
+CMSDM_PullData_snd exclude CMSDM_DataRequestReject_snd
+dmalt2end = Admin_DisplayReport_rec union Admin_Warning_rec
+dmalt2begin alternate dmalt2end
+CMSDM_PullData_snd subClock Authorized 
+CMSDM_DataRequestReject_snd subClock notAuthorized 
+CMSDM_PullData_snd  strictPre  PullData.start
+PullData.start  strictPre PullData.end
+PullData.end  strictPre  Database_PullData_rec
+Database_PullData_rec strictPre Database_ReturnData_snd
+Database_ReturnData_snd  strictPre ReturnData
+ReturnData strictPre CMSDM_Return_rec
+CMSDM_PullData_rec strictPre  CMSDM_SendData_snd
+CMSDM_SendData_snd  strictPre SendData.start
+SendData.start  strictPre SendData.end
+SendData.end strictPre  CMSUI_SendData_rec
+CMSUI_SendData_rec  strictPre  CMSUI_DisplayReport_snd
+CMSUI_DisplayReport_snd  strictPre DisplayReport
+DisplayReport strictPre Admin_DisplayReport_rec
+CMSDM_RequestReject_snd  strictPre  DataRequestReject
+RequestReject strictPre CMSUI_DataRequestReject_rec
+CMSUI_RequestReject_rec  strictPre  CMSUI_DisplayWarning_snd
+CMSUI_DisplayWarning_snd  strictPre  DisplayWarning
+DisplayWarning  strictPre  Admin_DisplayWarning_rec
+User_UserLogIn_snd  strictPre  UserLogIn
+UserLogIn strictPre CMSUI_UserLogIn_rec
+CMSUI_UserLogIn_rec  strictPre  CMSUI_UserCheck_snd
+CMSUI_UserCheck_snd  strictPre  UserCheck.start
+UserCheck.end  strictPre  CMSDM_UserCheck_rec
+CMSDM_UserCheck_rec strictPre CMSDM_CheckUserTable_snd
+CMSDM_CheckUserTable_snd strictPre CheckUserTable.start
+CheckUserTable.start  strictPre CheckUserTable.end
+CheckUserTable.end strictPre Database_CheckUserTable_rec
+Database_UserCheck_rec  strictPre  dmalt3begin
+dmalt3begin = CMSUI_UserValid_snd union CMSUI_UserinValid_snd
+CMSDM_UserValid_snd exclude CMSDM_UserinValid_snd
+dmalt3end=Admin_AdminLoginSucc_rec union User_UserLoginReject_rec
+dmalt3begin alternate dmalt3end
+UserValid coincides CMSDM_UserValid_snd
+UserinValid coincides CMSDM_UserinValid_snd
+CMSDM_valid_snd  strictPre  UserValid
+UserValid  strictPre  CMSUI_UserValid_rec
+CMSUI_UserValid_rec  strictPre  CMSUI_UserLoginSucc_snd
+CMSUI_UserLoginSucc_snd  strictPre  UserLoginSucc
+UserLoginSucc  strictPre  User_UserLoginSucc_rec
+CMSDM_UserinValid_snd  strictPre  UserinValid
+UserinValid  strictPre  CMSUI_UserinValid_rec
+CMSUI_UserinValid_rec  strictPre  CMSUI_UserLoginReject_snd
+CMSUI_LoginReject_snd  strictPre  UserLoginReject
+UserLoginReject strictPre  User_UserLoginReject_rec
+dmalt3end  strictPre  User_Request_snd
+User_Request_snd  strictPre Request
+Request  strictPre  CMSUI_Request_rec
+CMSUI_Request_rec  strictPre  CMSUI_UserReqCheck_snd
+CMSUI_UserReqCheck_snd  strictPre  UserReqCheck.start
+UserReqCheck.start strictPre UserReqCheck.end
+UserReqCheck.end strictPre CMSDU_UserReqCheck_rec
+CheckUserReqAutho.start strictPre CheckUserReqAutho.end
+CMSDM_UserReqCheck_rec  strictPre  CMSDM_CheckUserReqAutho_snd
+CMSDM_CheckUserReqAutho_snd strictPre CheckUserReqAutho.start
+CheckUserReqAutho.start strictPre CheckUserReqAutho.end
+CheckUserReqAutho.end strictPre Database_CheckUserReqAutho_rec
+Database_CheckUserReqAutho_rec strictPre  dmalt4begin
+notAuthorized coincides CMSDM_noAuthoReject_snd
+Authorized coincides CMSDM_CheckRobot_snd
+dmalt4begin = CMSDM_noAuthoReject_snd union CMSDM_reasonableReq_snd
+CMSDM_reasonableReq_snd  strictPre  reasonableReq
+reasonableReq  strictPre  CMSUI_reasonableReq_rec
+CMSUI_reasonableReq_rec   strictPre  CMSUI_CMSAcceptRequest_snd
+CMSUI_CMSAcceptRequest_snd  strictPre  CMSAcceptRequest
+CMSAcceptRequest  strictPre  User_CMSAcceptRequest_rec
+CMSDM_reasonableReq_snd  strictPre  CMSDM_PullRobotData_snd
+CMSDM_noAuthoReject_snd exclude CMSDM_PullRobotData_snd
+CMSDM_noAuthoReject_snd  strictPre noAuthoReject
+noAuthoReject strictPre  CMSUI_noAuthoReject_rec
+CMSUI_noAuthoReject_rec strictPre  CMSUI_RejectRequest_snd
+CMSUI_RejectRequest_snd  strictPre RejectRequest
+RejectRequest  strictPre  User_RejectRequest_rec
+CMSDM_PullRobotData_snd  strictPre  PullRobotData.start
+PullRobotData.start strictPre PullRobotData.end
+PullRobotData.end strictPre Database_PullRobotData_rec
+Database_PullRobotData_rec  strictPre  Database_RobotData_snd
+Database_RobotData_snd  strictPre  RobotData
+RobotData strictPre CMSDM_RobotData_rec
+CMSDM_RobotData_rec strictPre CMSDM_CheckRobot_snd 
+CMSDM_CheckRobot_snd  strictPre CheckRobot.start
+CheckRobot.start strictPre CheckRobot.end
+CheckRobot.end strictPre CMSDM_CheckRobot_rec
+CMSDM_CheckRobot_rec  strictPre  CMSDM_AssignRobot_snd
+CMSDM_AssignRobot_snd strictPre AssignRobot
+AssignRobot strictPre CMSCom_AssignRobot_rec
+CMSCom_AssignRobot_rec  strictPre  AssignRequest.start
+AssignRequest.start  strictPre  AssignRequest.end
+AssignRequest.end  strictPre  CMSCom_AssignRequest_rec
+CMSCom_AssignRequest_rec  strictPre CMSCom_RcomFail_snd
+CMSCom_RcomFail_snd strictPre RcomFail
+RcomFail strictPre CMSDM_RcomFail_rec
+CMSDM_RcomFail_rec strictPre CMSDM_ReAssignRobot_snd
+CMSDM_ReAssignRobot_snd  strictPre ReAssignRobot
+ReAssignRobot strictPre CMSCom_reAssignRobot_rec
+CMSCom_reAssignRobot_rec strictPre CMSCom_reAssignRequest_snd
+CMSCom_reAssignRequest_snd strictPre reAssignRequest.start
+reAssignRequest.start strictPre reAssignRequest.end
+reAssignRequest.start subClock AssignRequest.start
+reAssignRequest.end subClock AssignRequest.end
+reAssignRequest.end strictPre CMSCom_reAssignRequest_rec
+rmloopx=CMSCom_reAssignRequest_rec filteredBy 00001
+rmloopx strictPre CMSCom_AssignFeedBack_snd
+CMSCom_AssignFeedBack_snd  strictPre AssignFeedBack
+AssignFeedBack  strictPre  CMSDM_AssignFeedBack_rec
+CMSDM_AssignFeedBack_rec  strictPre  CMSDU_updateAssign_snd
+CMSDU_updateAssign_snd  strictPre  updateAssign.start
+updateAssign.start  strictPre  updateAssign.end
+updateAssign.start coincides ConnDataset.start
+updateAssign.end  strictPre  Database_updateAssign_rec
+CMSDU_updateAssign_snd strictPre  CMSDM_RequestFeedBack_snd
+CMSDM_RequestFeedBack_snd strictPre CMSRequestFeedBack
+CMSRequestFeedBack strictPre CMSUI_RequestFeedBack_rec
+CMSUI_ReqFeedBack_rec  strictPre  CMSUI_RequestFeedBack_snd
+CMSUI_RequestFeedBack_snd  strictPre  CMSRequestFeedBack
+CMSRequestFeedBack  strictPre User_RequestFeedBack_rec
+dmalt4end=User_Warning_rec union CMSUI_RequestFeedBack_rec
+dmalt4begin alternate dmalt4end
+dmalt3end  strictPre  User_getUserData_snd
+User_getUserData_snd  strictPre  getUserData
+getUserData strictPre  CMSUI_getUserData_rec
+CMSUI_getUserDataf_rec  strictPre  CMSUI_RoleCheck_snd
+CMSUI_RoleCheck_snd  strictPre  RoleCheck.start
+RoleCheck.start  strictPre  RoleCheck.end
+RoleCheck.end  strictPre  CMSDM_RoleCheck_rec
+CMSDM_RoleCheck_rec  strictPre  CMSDM_CheckUserTable_snd
+CMSDM_CheckUserTable_snd strictPre CheckUserTable.start
+CheckUserTable.start strictPre CheckUserTable.end
+CheckUserTable.end strictPre Database_CheckUserTable_rec
+Database_CheckUserTable_rec strictPre  dmalt5begin
+dmalt5begin = CMSDM_PullUserData_snd union CMSDM_DataRequestReject_snd
+CMSDM_PullUserData_snd subClock Authorized 
+CMSDM_DataRequestReject_snd subClock notAuthorized 
+CMSDM_PullUserData_snd  strictPre  PullUserData.start
+PullUserData.start  strictPre PullUserData.end
+PullUserData.end  strictPre  Database_PullUserData_rec
+Database_PullUserData_rec strictPre Database_ReturnUserData_snd
+Database_ReturnUserData_snd2  strictPre ReturnUserData
+ReturnUserData strictPre CMSDM_ReturnUserData_rec
+CMSDM_PullUserData_rec strictPre  CMSDM_SendUserData_snd
+CMSDM_SendUserData_snd  strictPre SendUserData.start
+CMSDM_PullUserData_snd exclude CMSDM_DataRequestReject_snd
+dmalt5end = User_Display_rec union User_Warning_rec
+dmalt5begin alternate dmalt5end
+CMSDM_SendUserData_snd  strictPre SendUserData.start
+SendUserData.start  strictPre SendUserData.end
+SendUserData.end strictPre  CMSUI_SendUserData_rec
+CMSUI_SendData_rec  strictPre  CMSUI_Display_snd
+CMSUI_Display_snd  strictPre Display.start
+Display.start  strictPre  Display.end
+Display.end strictPre User_Display.end
+CMSDM_RequestReject_snd  strictPre  DataRequestReject
+RequestReject strictPre CMSUI_DataRequestReject_rec
+CMSUI_RequestReject_rec  strictPre  CMSUI_Warning_snd
+CMSUI_Warning_snd  strictPre  Warning
+Warning  strictPre  User_Warning_rec
+User_EnterCancelPage_snd  strictPre  EnterCancelPage
+EnterCancelPage  strictPre  CMSUI_EnterCancelPage_rec
+CMSUI_EnterCancelPage_rec  strictPre  CMSUI_PassCalReq_snd
+CMSUI_PassCalReq_snd  strictPre  PassCalReq
+PassCalReq  strictPre  CMSDU_PassCalReq_rec
+CMSDU_PassCalReq_rec  strictPre  CMSDU_PullUsrTasks_snd
+CMSDU_PullUsrTasks_snd  strictPre  PullUsrTasks.start
+PullUsrTasks.start  strictPre  PullUsrTasks.end
+PullUsrTasks.end  strictPre  Database_PullUsrTasks_rec
+Database_PullUsrTasks_rec  strictPre  Database_UsrTaskInfo_snd
+Database_UsrTaskInfo_snd  strictPre  UsrTaskInfo
+UsrTaskInfo  strictPre  CMSDU_UsrTaskInfo_rec
+CMSDU_UsrTaskInfo_rec  strictPre  CMSDU_ParseUsrTaskResult_snd
+CMSDU_ParseUsrTaskResult_snd  strictPre ParseUsrTaskResult
+ParseUsrTaskResult strictPre CMSDU_ParseUsrTaskResult_rec
+CMSDU_ParseUsrTaskResult_rec  strictPre  CMSDU_FormTaskList_snd
+CMSDU_FormTaskList_snd  strictPre  FormTaskList
+FormTaskList strictPre CMSUI_FormTaskList_rec
+CMSUI_FormTaskList_rec strictPre CMSUI_DisplayTasks_snd
+CMSUI_DisplayTasks_snd  strictPre  DisplayTasks
+DisplayTasks strictPre  User_DisplayTasks_rec
+User_DisplayTasks_rec  strictPre  User_SelectCancelTasks_snd
+User_SelectCancelTasks_snd  strictPre  SelectCancelTasks
+SelectCancelTasks  strictPre  CMSUI_SelectCancelTasks_rec
+CMSUI_SelectCancelTasks_rec  strictPre  CMSUI_CancelTasks_snd
+CMSUI_toCancelTasks_snd  strictPre  toCancelTasks
+toCancelTasks  strictPre  CMSDU_toCancelTasks_rec
+CMSDU_CancelTasks_rec  strictPre  CMSDU_FormCancelCom_snd
+CMSDU_FormCancelCom_snd  strictPre  FormCancelCom
+FormCancelCom  strictPre  CMSCom_FormCancelCom_rec
+CMSCom_FormCancelCom_rec  strictPre  CMSCom_SendCancel_snd
+CMSCom_SendCancel_snd  strictPre  SendCancel.start
+SendCancel.start  strictPre SendCancel.end
+SendCancel.end  strictPre  CMSCom_SendCancel_rec
+CMSCom_CMSCancelFeedBack_snd  strictPre  CMSCancelFeedBack
+CMSCancelFeedBack  strictPre  CMSDU_CMSCancelFeedBack_rec
+CMSDU_CMSCancelFeedBack_rec  strictPre  CMSDU_CancelResult_snd
+CMSDU_CancelResult_snd  strictPre  CancelResult
+CancelResult strictPre  CMSUI_CancelResult_rec
+CMSDU_CMSCancelFeedBack_rec  strictPre CMSDU_UpdateTasksinDB_snd
+CMSDU_UpdateTasksinDB_snd strictPre UpdateTasksinDB.start
+UpdateTasksinDB.start strictPre UpdateTasksinDB.end
+UpdateTasksinDB.end strictPre Database_UpdateTasksinDB_rec
+UpdateTasksinDB.start coincides ConnDatabase.start
+Database_UpdateTasksinDB_rec  strictPre  CMSUI_DisplayCancelResult_snd
+CMSUI_DisplayCancelResult_snd  strictPre  DisplayCancelResult
+DisplayCancelResult  strictPre  User_DisplayCancelResult_rec
+HeartBeat PeriodicOn 60
+CMInitial.start precedes CMInitial.exit
+CMInitial.exit precedes CMInitial.left
+CMt1.tr coincides CMInitial.left
+CMt1.reached coincides CMInitial.start
+CMt1.reached precedes CMt1.begin
+CMt1.tr precedes CMt1.begin
+CMInitial.left precedes CMt1.traversed
+CMt1.completed subClock CMInitialization.start
+CMt1.begin coincides CMt1.traversed
+CMt1.traversed coincides CMt1.completed
+CMInitialization.start coincides CMInitialization.ey.start
+CMInitialization.ey.end strictPre CMInitialization.exit
+CMInitialization.ey.start coincides CMInitialization.ey.end
+CMInitialization.ey.start coincides InitialCMParams
+CMInitialization.start  strictPre  CMInitialization.do.start
+CMInitialization.do.end  strictPre  CMInitialization.exit
+CMInitialization.do.completed exclude CMInitialization.do.aborted
+CMInitialization.do.end = CMInitialization.do.completed union CMInitialization.do.aborted
+CMInitialization.do.start  strictPre CMInitialization.do.end
+CMInitialization.do.start coincides TestConn.start
+CMInitialization.do.end coincides TestConn.end
+CMInitialization.exit coincides CMInitialization.et.start
+CMInitialization.left  coincides CMInitialization.et.end
+CMInitialization.et.start coincides CMInitialization.et.end
+CMInitialization.et.start coincides Ready
+CMInitialization.ey.end precedes CMInitialization.et.start
+CMInitialization.do.end precedes CMInitialization.et.start
+CMt2.tr coincides CMInitialization.left
+CMt2.reached coincides CMInitialization.start
+CMt2.reached precedes CMt2.begin
+CMt2.tr precedes CMt2.begin
+CMInitialization.left precedes CMt2.traversed
+CMt2.completed subClock CMInitialization.start
+CMt2.begin coincides CMt2.traversed
+CMt2.traversed coincides CMt2.completed
+CMIdle.start precedes CMIdle.exit
+CMIdle.exit precedes CMIdle.left
+CMIdle.start coincides CMIdle.ey.start
+CMIdle.start coincides selectConKind
+CMIdle.ey.end strictPre CMIdle.exit
+CMIdle.start  strictPre  CMIdle.do.start
+CMIdle.do.end  strictPre  CMIdle.exit
+CMIdle.do.completed exclude CMIdle.do.aborted
+CMIdle.do.end = CMIdle.do.completed union CMIdle.do.aborted
+CMIdle.do.start  strictPre CMIdle.do.end
+CMIdle.do.start coincides accConn.start
+CMIdle.do.end coincides accConn.end
+CMIdle.exit coincides CMIdle.et.start
+CMIdle.left  coincides CMIdle.et.end
+CMIdle.et.start coincides CMIdle.et.end
+CMIdle.et.start coincides selectConKind
+CMIdle.do.end precedes CMIdle.et.start
+CMt3.tr subClock byGPRS
+CMt3.reached coincides CMIdle.start
+CMt3.reached precedes CMt3.begin
+CMt3.tr precedes CMt3.begin
+CMIdle.left precedes CMt3.traversed
+CMt3.completed subClock StartGPRSCon.start 
+CMt3.begin coincides CMt3.traversed 
+CMt3.traversed coincides CMt3.completed
+CMt4.tr subClock byWIFI
+CMt4.reached coincides CMIdle.start
+CMt4.reached precedes CMt4.begin
+CMt4.tr precedes CMt4.begin
+CMIdle.left precedes CMt4.traversed
+CMt4.completed subClock StartWIFICon.start 
+CMt4.begin coincides CMt4.traversed 
+CMt4.traversed coincides CMt4.completed
+CMt5.tr subClock ComFault
+CMt5.reached coincides CMIdle.start
+CMt5.reached precedes CMt5.begin
+CMt5.tr precedes CMt5.begin
+CMIdle.left precedes CMt5.traversed
+CMt5.completed subClock CMMaintaining.start 
+CMt5.begin coincides CMt5.traversed 
+CMt5.traversed coincides CMt5.completed
+CMt6.tr subClock PowerOff
+CMt6.reached coincides CMIdle.start
+CMt6.reached precedes CMt6.begin
+CMt6.tr precedes CMt6.begin
+CMIdle.left precedes CMt6.traversed
+CMt6.completed subClock CMFinal.start 
+CMt6.begin coincides CMt6.traversed 
+CMt6.traversed coincides CMt6.completed
+CMt7.tr subClock PowerOff
+CMt7.reached coincides CMInitialization.start
+CMt7.reached precedes CMt7.begin
+CMt7.tr precedes CMt7.begin
+CMInitialization.left precedes CMt7.traversed
+CMt7.completed subClock CMFinal.start 
+CMt7.begin coincides CMt7.traversed 
+CMt7.traversed coincides CMt7.completed
+CMt8.tr subClock noAvailable
+CMt8.reached coincides CMInitialization.start
+CMt8.reached precedes CMt8.begin
+CMt8.tr precedes CMt8.begin
+CMInitialization.left precedes CMt8.traversed
+CMt8.completed subClock CMMaintaining.start 
+CMt8.begin coincides CMt8.traversed 
+CMt8.traversed coincides CMt8.completed
+StartGPRSCon.start precedes StartGPRSCon.exit
+StartGPRSCon.exit precedes StartGPRSCon.left
+StartGPRSCon.start coincides StartGPRSCon.ey.start
+StartGPRSCon.ey.end strictPre StartGPRSCon.exit
+StartGPRSCon.ey.start  strictPre  StartGPRSCon.ey.end
+StartGPRSCon.ey.start coincides startGconn.start
+StartGPRSCon.ey.end coincides startGconn.end
+StartGPRSCon.exit coincides StartGPRSCon.left
+StartGPRSCon.exit coincides StartGPRSCon.ey.end
+StartWIFICon.start precedes StartWIFICon.exit
+StartWIFICon.exit precedes StartWIFICon.left
+StartWIFICon.start coincides StartWIFICon.ey.start
+StartWIFICon.ey.end strictPre StartWIFICon.exit
+StartWIFICon.ey.start  strictPre  StartWIFICon.ey.end
+StartWIFICon.ey.start coincides startWconn.start
+StartWIFICon.ey.end coincides startWconn.end
+StartWIFICon.exit coincides StartWIFICon.left
+StartWIFICon.exit coincides StartWIFICon.ey.end
+CMt9.tr subClock Gcontimeout
+CMt9.reached coincides StartGPRSCon.start
+CMt9.reached precedes CMt9.begin
+CMt9.tr precedes CMt9.begin
+StartGPRSCon.left precedes CMt9.traversed
+CMt9.completed subClock CMIdle.start 
+CMt9.begin coincides CMt9.traversed 
+CMt9.traversed coincides CMt9.completed
+CMt10.tr subClock startGfail
+CMt10.reached coincides StartGPRSCon.start
+CMt10.reached precedes CMt10.begin
+CMt10.tr precedes CMt10.begin
+StartGPRSCon.left precedes CMt10.traversed
+CMt10.completed subClock StartGPRSCon.start 
+CMt10.begin coincides CMt10.traversed 
+CMt10.traversed coincides CMt10.completed
+CMt11.tr subClock startGsucc
+CMt11.reached coincides StartGPRSCon.start
+CMt11.reached precedes CMt11.begin
+CMt11.tr precedes CMt11.begin
+StartGPRSCon.left precedes CMt11.traversed
+CMt11.completed subClock Merge.start 
+CMt11.begin coincides CMt11.traversed 
+CMt11.traversed coincides CMt11.completed
+CMt12.tr subClock Wcontimeout
+CMt12.reached coincides StartWIFICon.start
+CMt12.reached precedes CMt12.begin
+CMt12.tr precedes CMt12.begin
+StartWIFICon.left precedes CMt12.traversed
+CMt12.completed subClock CMIdle.start 
+CMt12.begin coincides CMt12.traversed 
+CMt12.traversed coincides CMt12.completed
+CMt13.tr subClock startWsucc
+CMt13.reached coincides StartWIFICon.start
+CMt13.reached precedes CMt13.begin
+CMt13.tr precedes CMt13.begin
+StartWIFICon.left precedes CMt13.traversed
+CMt13.completed subClock Merge.start 
+CMt13.begin coincides CMt13.traversed 
+CMt13.traversed coincides CMt13.completed
+CMt14.tr subClock startWfail
+CMt14.reached coincides StartWIFICon.start
+CMt14.reached precedes CMt13.begin
+CMt14.tr precedes CMt14.begin
+StartWIFICon.left precedes CMt14.traversed
+CMt14.completed subClock StartWIFICon.start 
+CMt14.begin coincides CMt14.traversed 
+CMt14.traversed coincides CMt14.completed
+CMMerge.start = CMt11.completed union CMt13.completed
+CMMerge.start coincides CMMerge.exit
+CMMerge.start coincides CMMerge.left
+CMt15.reached coincides CMMerge.start
+CMt15.reached precedes CMt15.begin
+CMt15.tr precedes CMt15.begin
+CMMerge.left precedes CMt15.traversed
+CMt15.begin coincides CMt15.traversed
+CMt15.traversed coincides CMt15.completed
+CMt15.tr coincides CMMerge.left
+CMt15.completed subClock CMConnected.start
+CMConnected.start precedes CMConnected.exit
+CMConnected.exit precedes CMConnected.left
+CMConnected.start  strictPre  CMConnected.do.start
+CMConnected.do.end  strictPre  CMConnected.exit
+CMConnected.do.completed subClock CMConnected.do.aborted
+CMConnected.do.end = CMConnected.do.completed union CMConnected.do.aborted
+CMConnected.do.start  strictPre  CMConnected.do.end
+CMConnected.do.start coincides HeartBeat.start
+CMConnected.do.end coincides HeartBeat.end
+CMConnected.exit coincides CMConnected.et.start
+CMConnected.left coincides CMConnected.et.end
+CMConnected.et.start coincides CMConnected.et.end
+CMConnected.et.start coincides closeConn
+CMConnected.do.end precedes CMConnected.et.start
+RRU = RUInitial.start union RRInitial.start
+RSU = RRU union RSInitial.start
+RCU = RSU union RRCInitial.start
+CMConnectedInnerStart = RCU union RRSAFinal.start
+RFU = RUFinal.exit union RRFinal.exit
+RSU = RFU union RSFinal.exit 
+RCU = RSU union RRCFinal.exit 
+CMConnectedInnerExit = RCU union RRSAFinal.exit
+CMConnected.start precedes CMConnectedInnerStart
+CMConnectedInnerExit precedes CMConnected.exit
+RUInitial.start precedes RUInitial.exit
+RUInitial.exit precedes RUInitial.left
+CMt16.tr subClock DecideUpdates
+CMt16.reached coincides RUInitial.start
+CMt16.reached precedes CMt16.begin
+CMt16.tr precedes CMt16.begin
+RUInitial.left precedes CMt16.traversed
+CMt16.completed subClock SendUpdate.start 
+CMt16.begin coincides CMt16.traversed 
+CMt16.traversed coincides CMt16.completed
+SendUpdate.start precedes SendUpdate.exit
+SendUpdate.exit precedes SendUpdate.left
+SendUpdate.start  strictPre  SendUpdate.do.start
+SendUpdate.do.end  strictPre  SendUpdate.exit
+SendUpdate.do.completed exclude SendUpdate.do.aborted
+SendUpdate.do.end = SendUpdate.do.completed union SendUpdate.do.aborted
+SendUpdate.do.start coincides SendUpdate.do.end
+SendUpdate.do.start coincides SendUpdates
+SendUpdate.exit coincides SendUpdate.et.start
+SendUpdate.left coincides SendUpdate.et.end
+SendUpdate.et.start coincides SendUpdate.et.end
+SendUpdate.et.start coincides updateFinish
+SendUpdate.ey.end precedes SendUpdate.et.start
+SendUpdate.do.end precedes SendUpdate.et.start
+CMt17.tr subClock dataLost
+CMt17.reached coincides SendUpdate.start
+CMt17.reached precedes CMt17.begin
+CMt17.tr precedes CMt17.begin
+SendUpdate.left precedes CMt17.traversed
+CMt17.completed subClock SendUpdate.start 
+CMt17.begin coincides CMt17.traversed 
+CMt17.traversed coincides CMt17.completed
+CMt18.tr = SendUpdate.ey.end sup SendUpdate.do.end sup SendUpdate.et.end 
+CMt18.reached coincides SendUpdate.start
+CMt18.reached precedes CMt18.begin
+CMt18.tr precedes CMt18.begin
+SendUpdate.left precedes CMt18.traversed
+CMt18.completed subClock RUFinal.start 
+CMt18.begin coincides CMt18.traversed 
+CMt18.traversed coincides CMt18.completed
+RUFinal.start precedes RUFinal.exit
+RUFinal.exit precedes RUFinal.left
+RRInitial.start coincides RRInitial.exit
+RRInitial.exit coincides RRInitial.left
+CMt19.tr subClock ComRobotReq
+CMt19.reached coincides RRInitial.start
+CMt19.reached precedes CMt19.begin
+CMt19.tr precedes CMt19.begin
+RRInitial.left precedes CMt19.traversed
+CMt19.completed subClock ComRobotReq 
+CMt19.begin coincides CMt19.traversed 
+CMt19.traversed coincides CMt19.completed
+ReceiveRequest.start precedes ReceiveRequest.exit
+ReceiveRequest.exit precedes ReceiveRequest.left
+ReceiveRequest.start  strictPre  ReceiveRequest.do.start
+ReceiveRequest.do.end  strictPre  ReceiveRequest.exit
+ReceiveRequest.do.completed exclude ReceiveRequest.do.aborted
+ReceiveRequest.do.end = ReceiveRequest.do.completed union ReceiveRequest.do.aborted
+ReceiveRequest.do.start  strictPre  ReceiveRequest.do.end
+ReceiveRequest.do.start coincides ProcessRequest.start
+ReceiveRequest.do.end coincides ProcessRequest.end
+ReceiveRequest.exit coincides ReceiveRequest.et.start
+ReceiveRequest.left coincides ReceiveRequest.et.end
+ReceiveRequest.et.start coincides ReceiveRequest.et.end
+ReceiveRequest.et.start coincides FeedBackAssignReq
+ReceiveRequest.ey.end precedes ReceiveRequest.et.start
+ReceiveRequest.do.end precedes ReceiveRequest.et.start
+CMt20.tr = ReceiveRequest.do.end sup ReceiveRequest.et.end
+CMt20.reached coincides ReceiveRequest.start
+CMt20.reached precedes CMt20.begin
+CMt20.tr precedes CMt20.begin
+ReceiveRequest.left precedes CMt20.traversed
+CMt20.completed subClock RRFinal.start 
+CMt20.begin coincides CMt20.traversed 
+CMt20.traversed coincides CMt20.completed
+RRFinal.start coincides RRFinal.exit
+RRFinal.exit coincides RRFinal.left
+CMt21.tr = CMConnected.do.end sup CMConneted.ey.end
+CMt21.reached coincides CMConnected.start
+CMt21.reached precedes CMt21.begin
+CMt21.tr precedes CMt21.begin
+CMConnected.left precedes CMt21.traversed
+CMt21.completed subClock CMIdle.start 
+CMt21.begin coincides CMt21.traversed 
+CMt21.traversed coincides CMt21.completed
+CMt22.tr subClock PowerOff
+CMt22.reached coincides CMMaintaining.start
+CMt17.reached precedes CMt22.begin
+CMt22.tr precedes CMt22.begin
+CMMaintaining.left precedes CMt22.traversed
+CMt22.completed subClock CMFinal.start 
+CMt22.begin coincides CMt22.traversed 
+CMt22.traversed coincides CMt22.completed
+CMMaintaining.start precedes CMMaintaining.exit
+CMMaintaining.exit precedes CMMaintaining.left
+CMMaintaining.start coincides CMMaintaining.ey.start
+CMMaintaining.ey.end  strictPre  CMMaintaining.exit
+CMMaintaining.ey.start coincides CMMaintaining.ey.end
+CMMaintaining.ey.start coincides SignifyCMMaintaining
+CMMaintaining.start  strictPre  CMMaintaining.do.start
+CMMaintaining.do.end  strictPre  CMMaintaining.exit
+CMMaintaining.do.completed exclude CMMaintaining.do.aborted
+CMMaintaining.do.end = CMMaintaining.do.completed union CMMaintaining.do.aborted
+CMMaintaining.do.start  strictPre  CMMaintaining.do.end
+CMMaintaining.do.start coincides CMMaintaining.start
+CMMaintaining.do.end coincides CMMaintaining.end
+CMMaintaining.ey.end  strictPre  CMMaintaining.do.start
+CMMaintaining.exit coincides CMMaintaining.et.start
+CMMaintaining.left coincides CMMaintaining.et.end
+CMMaintaining.et.start coincides CMMaintaining.et.end
+CMMaintaining.et.start coincides CMReadyConfirm
+CMMaintaining.ey.end  strictPre  CMMaintaining.et.start
+CMMaintaining.do.end  strictPre  CMMaintaining.et.start
+RSInitial.start coincides RSInitial.exit
+RSInitial.exit coincides RSInitial.left
+CMt23.tr subClock MalFunction
+CMt23.reached coincides RSInitial.start
+CMt23.reached precedes CMt23.begin
+CMt23.tr precedes CMt23.begin
+RSInitial.left precedes CMt23.traversed
+CMt23.completed subClock SendFault.start 
+CMt23.begin coincides CMt23.traversed 
+CMt23.traversed coincides CMt23.completed
+SendFault.start precedes SendFault.exit
+SendFault.exit precedes SendFault.left
+SendFault.start  strictPre  SendFault.do.start
+SendFault.do.end  strictPre  SendFault.exit
+SendFault.do.completed exclude SendFault.do.aborted
+SendFault.do.end = SendFault.do.completed union SendFault.do.aborted
+SendFault.do.start coincides SendFault.do.end
+SendFault.do.start coincides ReportFault
+SendFault.exit coincides SendFault.et.start
+SendFault.left coincides SendFault.et.end
+SendFault.et.start coincides SendFault.et.end
+SendFault.et.start coincides reportFinish
+SendFault.ey.end precedes SendFault.et.start
+SendFault.do.end precedes SendFault.et.start
+CMt24.tr subClock reportLost
+CMt24.reached coincides SendFault.start
+CMt24.reached precedes CMt24.begin
+CMt24.tr precedes CMt24.begin
+SendFault.left precedes CMt24.traversed
+CMt24.completed subClock SendFault.start 
+CMt24.begin coincides CMt24.traversed 
+CMt24.traversed coincides CMt24.completed
+CMt25.tr = SendFault.do.end sup SendFault.et.end
+CMt25.reached coincides SendFault.start
+CMt25.reached precedes CMt25.begin
+CMt25.tr precedes CMt25.begin
+SendFault.left precedes CMt25.traversed
+CMt25.completed subClock RSFinal.start 
+CMt25.begin coincides CMt25.traversed 
+CMt25.traversed coincides CMt25.completed
+RSFinal.start coincides RSFinal.exit
+RSFinal.exit coincides RSFinal.left
+RRCInitial.start coincides RRCInitial.exit
+RRCInitial.exit coincides RRCInitial.left
+CMt26.tr subClock SendCancel.start
+CMt26.reached coincides RRCInitial.start
+CMt26.reached precedes CMt26.begin
+CMt26.tr precedes CMt26.begin
+RRCInitial.left precedes CMt26.traversed
+CMt26.completed subClock ComRobotCancel 
+CMt26.begin coincides CMt26.traversed 
+CMt26.traversed coincides CMt26.completed
+ReceiveCancel.start precedes ReceiveCancel.exit
+ReceiveCancel.exit precedes ReceiveCancel.left
+ReceiveCancel.start  strictPre  ReceiveCancel.do.start
+ReceiveCancel.do.end  strictPre  ReceiveCancel.exit
+ReceiveCancel.do.completed exclude ReceiveCancel.do.aborted
+ReceiveCancel.do.end = ReceiveCancel.do.completed union ReceiveCancel.do.aborted
+ReceiveCancel.do.start  strictPre  ReceiveCancel.do.end
+ReceiveCancel.do.start coincides ProcessCancel.start
+ReceiveCancel.do.end coincides ReceiveCancel.end
+ReceiveCancel.exit coincides ReceiveCancel.et.start
+ReceiveCancel.left coincides ReceiveCancel.et.end
+ReceiveCancel.et.start coincides ReceiveCancel.et.end
+ReceiveCancel.et.start coincides RtFeedBackCancel
+ReceiveCancel.ey.end precedes ReceiveCancel.et.start
+ReceiveCancel.do.end precedes ReceiveCancel.et.start
+CMt27.tr =ReceiveCancel.do.end sup ReceiveCancel.et.end
+CMt27.reached coincides ReceiveCancel.start
+CMt27.reached precedes CMt27.begin
+CMt27.tr precedes CMt27.begin
+ReceiveCancel.left precedes CMt27.traversed
+CMt27.completed subClock RRCFinal.start 
+CMt27.begin coincides CMt27.traversed 
+CMt27.traversed coincides CMt27.completed
+RRSAInitial.start coincides RRSAInitial.exit
+RRSAInitial.exit coincides RRSAInitial.left
+CMt28.tr subClock ArriveTarget
+CMt28.reached coincides RRSAInitial.start
+CMt28.reached precedes CMt28.begin
+CMt28.tr precedes CMt28.begin
+RRSAInitial.left precedes CMt28.traversed
+CMt28.completed subClock ComArrival.start 
+CMt28.begin coincides CMt28.traversed 
+CMt28.traversed coincides CMt28.completed
+ComArrival.start precedes ComArrival.exit
+ComArrival.exit precedes ComArrival.left
+ComArrival.start  strictPre  ComArrival.do.start
+ComArrival.do.end  strictPre  ComArrival.exit
+ComArrival.do.completed exclude ComArrival.do.aborted
+ComArrival.do.end = ComArrival.do.completed union ComArrival.do.aborted
+ComArrival.do.start  coincides  ComArrival.do.end
+ComArrival.do.start coincides RtSignifyArrival
+ComArrival.do.end coincides ComArrival.end
+ComArrival.exit coincides ComArrival.do.end
+CMt29.tr subClock SigComBack
+CMt29.reached coincides ComArrival.start
+CMt29.reached precedes CMt29.begin
+CMt29.tr precedes CMt29.begin
+ComArrival.left precedes CMt29.traversed
+CMt29.completed subClock RRSAFinal.start 
+CMt29.begin coincides CMt29.traversed 
+CMt29.traversed coincides CMt29.completed
+RRSAFinal.start coincides RRSAFinal.exit
+RRSAFinal.start coincides RRSAFinal.left
+FeedBackAssignReq strictPre AssignFeedBack 
+MRInitial  strictPre  FillRBInfo.start
+FillRBInfo.start  strictPre  FillRBInfo.end
+FillRBInfo.end  strictPre  RoleCheck.start
+RoleCheck.start  strictPre  RoleCheck.end
+RoleCheck.end = Authorized union notAuthorized
+Authorized exclude notAuthorized
+Authorized  strictPre  InfoCheck.start
+InfoCheck.start  strictPre   InfoCheck.end
+Mer1=notAuthorized union InfoInValid
+InfoCheck.end=InfoValid union InfoInValid
+InfoValid exclude InfoInValid
+InfoValid  strictPre MRFork
+MRFork  strictPre  UpdateComModule
+MRFork  strictPre  UpdateDatabase.start
+MRJoin=UpdateDatabase.end inf UpdateComModule
+MRJoin  strictPre  AdminConfirm
+Mer2 = AdminConfirm union Reject
+Mer1  strictPre  Reject
+Mer2  strictPre  MRFinal
+
+NRInitialParams.start coincides NRCheckSensors
+NRCheckSensors = NRSensorsNormal union NRSensorsFault
+NRCheckSensors strictPre CheckMap
+CheckMap = noMap union hasMap
+NRSensorsFaultU = LocalizationSensorFault union RoverDriverFault 
+NRSensorsFault = NRSensorsFaultU union DetectionSensorFault
+NRCheckStaus= NRSensorsFault union NRStatusNormal
+NRCheckStaus = idealClk discretizedBy 10
+CheckSensors = NRSensorsFault union NRSensorsNormal
+NRReady = hasMap sup NRSensorsNormal
+NRStatusCheck.end = NRStatusNormal union NRStatusAbnormal
+ReceiveTraj - SendTraj < 0.02
+connectSLAMU = connectSLAMSucc union connectSLAMFail 
+connectSLAM = connectSLAMU nion SLAMconncTimeout
+SLAMconncTimeout = BuildMap.start defer connectSLAMFail for (0001)
+MapTimeout= SLAMalg.start defer MapFail for (0001)
+SLAMalg.endU = NRSensorFault union MapFinish 
+SLAMalg.endUU = SLAMalg.endU union MapFail 
+SLAMalg.end = SLAMalg.endUU union MapTimeout
+MapMalFunctionU = NRSensorFault union MapTimeout 
+MapMalFunction = MapMalFunctionU union SLAMconncTimeout
+Positioning.start coincides PoseLoc
+Postitioning.end coincides PosePos
+NRFaultOccur = NRSensorFault union Collision
+NRCheckStaus= RDFaultOccur union NRStatusNormal
+NRCheckStaus = idealClk discretizedBy 10
+SelectNRSensorConfig = UrgNRConfStart union RegNRConfStart
+SLAMalg.start alternate SLAMalg.end
+ArriveTarget subClock Stopped
+TargetDetected strictPre ArriveTarget
+CCMInitial.start precedes CCMInitial.exit
+CCMInitial.exit precedes CCMInitial.left
+CCMt1.tr coincides CCMInitial.start
+CCMt1.reached coincides CCMInitial.start
+CCMt1.reached precedes CCMt1.begin
+CCMt1.tr precedes CCMt1.begin
+CCMInitial.left precedes CCMt1.traversed
+CCMt1.completed subClock CCMInitialization.start
+CCMt1.begin coincides CCMt1.traversed
+CCMt1.traversed coincides CCMt1.completed
+CCMInitialization.start coincides CCMInitialization.ey.start
+CCMInitialization.ey.end strictPre CCMInitialization.exit
+CCMInitialization.ey.start coincides CCMInitialization.ey.end
+CCMInitialization.ey.start coincides CCMInitialParams
+CCMInitialization.exit coincides CCMInitialization.et.start
+CCMInitialization.left coincides CCMInitialization.et.end
+CCMInitialization.et.start coincides CCMInitialization.et.end
+CCMInitialization.et.start coincides CCMReady
+CCMInitialization.ey.end  strictPre  CCMInitialization.et.start
+CCMt2.tr coincides CCMInitialization.start
+CCMt2.reached coincides CCMInitialization.start
+CCMt2.reached precedes CCMt2.begin
+CCMt2.tr precedes CCMt2.begin
+CCMInitialization.left precedes CCMt2.traversed
+CCMt2.completed subClock CCMIdle.start
+CCMt2.begin coincides CCMt2.traversed
+CCMt2.traversed coincides CCMt2.completed
+CCMt3.tr subClock CMSStopService
+CCMt3.reached coincides CCMInitialization.start
+CCMt3.reached precedes CCMt3.begin
+CCMt3.tr precedes CCMt3.begin
+CCMInitialization.left precedes CCMt3.traversed
+CCMt3.completed subClock CCMFinal.start 
+CCMt3.begin coincides CCMt3.traversed 
+CCMt3.traversed coincides CCMt3.completed
+CMIdle.start precedes CMIdle.exit
+CMIdle.exit precedes CMIdle.left
+CMIdle.start  strictPre CMIdle.do.start
+CMIdle.do.end  strictPre CMIdle.exit
+CMIdle.do.completed exclude CMIdle.do.aborted
+CMIdle.do.start  strictPre CMIdle.do.end
+CMIdle.do.start coincides ProcessConnRequest.start
+CMIdle.do.end coincides ProcessConnRequest.end
+CMIdle.exit coincides CMIdle.left
+CMIdle.exit coincides do.end
+CCMt4.tr subClock UpdateComModule
+CCMt4.reached coincides CCMIdle.start
+CCMt4.reached precedes CCMt4.begin
+CCMt4.tr precedes CCMt4.begin
+CCMIdle.left precedes CCMt4.traversed
+CCMt4.completed subClock CCMInitialization.start 
+CCMt4.begin coincides CCMt4.traversed 
+CCMt4.traversed coincides CCMt4.completed
+CCMt5.tr subClock CMSStopService
+CCMt5.reached coincides CCMIdle.start
+CCMt5.reached precedes CCMt5.begin
+CCMt5.tr precedes CCMt5.begin
+CCMIdle.left precedes CCMt5.traversed
+CCMt5.completed subClock CCMFinal.start 
+CCMt5.begin coincides CCMt5.traversed 
+CCMt5.traversed coincides CCMt5.completed
+CCMt6.tr subClock StartConnSucc
+CCMt6.reached coincides CCMIdle.start
+CCMt6.reached precedes CCMt6.begin
+CCMt6.tr precedes CCMt6.begin
+CCMIdle.left precedes CCMt6.traversed
+CCMt6.completed subClock RobotConnected.start 
+CCMt6.begin coincides CCMt6.traversed 
+CCMt6.traversed coincides CCMt6.completed
+RobotConnected.start precedes RobotConnected.exit
+RobotConnected.exit precedes RobotConnected.left
+RobotConnected.start  strictPre RobotConnected.do.start
+RobotConnected.do.end  strictPre RobotConnected.exit
+RobotConnected.do.completed exclude RobotConnected.do.aborted
+RobotConnected.do.start  strictPre RobotConnected.do.end
+RobotConnected.do.start coincides HeartBeat.start
+RobotConnected.do.end coincides HeartBeat.end
+RobotConnected.exit coincides RobotConnected.et.start
+RobotConnected.left coincides RobotConnected.et.end
+RobotConnected.et.start coincides RobotConnected.et.end
+RobotConnected.et.start coincides CloseRConn
+RobotConnected.do.end  strictPre RobotConnected.et.start
+RobotConnected.do.end precedes RobotConnected.et.start
+RobotConnectedInnerStartU = RCUInitial.start union RCSInitial.start 
+RobotConnectedInnerStartUU = RobotConnectedInnerStartU union RRMInitial.start 
+RobotConnectedInnerStart = RobotConnectedInnerStartUU union RRCInitial.start
+RobotConnectedInnerExitU = RCUFinal.exit union RCSFinal.exit 
+RobotConnectedInnerExitUU = RobotConnectedInnerExitU union RobotConnectedInnerExitU 
+RobotConnectedInnerExitUUU = RobotConnectedInnerExitUU union RRMFinal.exit 
+RobotConnectedInnerExit = RobotConnectedInnerExitUUU union RRCFinal.exit
+RobotConnected.start precedes RobotConnectedInnerStart
+RobotConnectedInnerExit precedes RobotConnected.exit
+CCMt7.tr = RobotConnected.et.end sup RobotConnected.do.end
+CCMt7.reached coincides RobotConnected.start
+CCMt7.reached precedes CCMt7.begin
+CCMt7.tr precedes CCMt7.begin
+RobotConnected.left precedes CCMt7.traversed
+CCMt7.completed subClock CMIdle.start 
+CCMt7.begin coincides CCMt7.traversed 
+CCMt7.traversed coincides CCMt7.completed
+RCUInitial.start coincides RCUInitial.exit
+RCUInitial.exit coincides RCUInitial.left
+CCMt8.tr subClock SendUpdates
+CCMt8.reached coincides RCUInitil.start
+CCMt8.reached precedes CCMt8.begin
+CCMt8.tr precedes CCMt8.begin
+RCUInitial.left precedes CCMt8.traversed
+CCMt8.completed subClock RegularlyUpdate.start 
+CCMt8.begin coincides CCMt8.traversed 
+CCMt8.traversed coincides CCMt8.completed
+RegularlyUpdate.start precedes RegularlyUpdate.exit
+RegularlyUpdate.exit precedes RegularlyUpdate.left
+RegularlyUpdate.start coincides RegularlyUpdate.ey.start
+RegularlyUpdate.ey.end  strictPre  RegularlyUpdate.exit
+RegularlyUpdate.ey.start  strictPre  RegularlyUpdate.ey.end
+RegularlyUpdate.ey.start coincides ParseData.start
+RegularlyUpdate.ey.end coincides ParseData.end
+RegularlyUpdate.start  strictPre RegularlyUpdate.do.start
+RegularlyUpdate.do.end  strictPre RegularlyUpdate.exit
+RegularlyUpdate.do.completed exclude RegularlyUpdate.do.aborted
+RegularlyUpdate.do.start  strictPre RegularlyUpdate.do.end
+RegularlyUpdate.do.start coincides RegularUpdate.start
+RegularlyUpdate.do.end coincides RegularUpdate.end
+RegularlyUpdate.exit coincides RegularlyUpdate.et.start
+RegularlyUpdate.left coincides RegularlyUpdate.et.end
+RegularlyUpdate.et.start coincides RegularlyUpdate.et.end
+RegularlyUpdate.et.start coincides UFFeedBack
+RegularlyUpdate.ey.end  strictPre RegularlyUpdate.et.start
+RegularlyUpdate.do.end  strictPre RegularlyUpdate.et.start
+CCMt9.trS = RegularlyUpdate.ey.end sup RegularlyUpdate.do.end 
+CCMt9.tr = CCMt9.trS sup RegularlyUpdate.et.end
+CCMt9.reached coincides RegularlyUpdate.start
+CCMt9.reached precedes CCMt9.begin
+CCMt9.tr precedes CCMt9.begin
+RegularlyUpdate.left precedes CCMt9.traversed
+CCMt9.completed subClock RCUFinal.start
+CCMt9.begin coincides CCMt9.traversed
+CCMt9.traversed coincides CCMt9.completed
+RCUFinal.start coincides RCUFinal.exit
+RCUFinal.exit coincides RCUFinal.left
+RCSInitial.start coincides RCSInitial.exit
+RCSInitial.exit coincides RCSInitial.left
+CCMt10.tr subClock AssignRobot
+CCMt10.reached coincides RCSInitial.start
+CCMt10.reached precedes CCMt10.begin
+CCMt10.tr precedes CCMt10.begin
+RCSInitial.left precedes CCMt10.traversed
+CCMt10.completed subClock AssignRequest.start 
+CCMt10.begin coincides CCMt10.traversed 
+CCMt10.traversed coincides CCMt10.completed
+AssignRequest.start precedes AssignRequest.exit
+AssignRequest.exit precedes AssignRequest.left
+AssignRequest.start coincides AssignRequest.ey.start
+AssignRequest.ey.end  strictPre  AssignRequest.exit
+AssignRequest.ey.start coincides AssignRequest.ey.end
+AssignRequest.ey.start coincides ComRobotReq
+AssignRequest.start  strictPre AssignRequest.do.start
+AssignRequest.do.end  strictPre AssignRequest.exit
+AssignRequest.do.completed exclude AssignRequest.do.aborted
+AssignRequest.do.start  strictPre AssignRequest.do.end
+AssignRequest.do.start coincides AssignRequest.start
+AssignRequest.do.end coincides AssignRequest.end
+AssignRequest.exit coincides AssignRequest.et.start
+AssignRequest.left coincides AssignRequest.et.end
+AssignRequest.et.start coincides AssignRequest.et.end
+AssignRequest.et.start coincides AssignFeedBack
+AssignRequest.ey.end  strictPre AssignRequest.et.start
+AssignRequest.do.end  strictPre AssignRequest.et.start
+CCMt11.trS = AssignRequest.ey.end sup AssignRequest.do.end 
+CCMt11.trS = CCMt11.tr sup AssignRequest.et.end
+CCMt11.reached coincides AssignRequest.start
+CCMt11.reached precedes CCMt11.begin
+CCMt11.tr precedes CCMt11.begin
+AssignRequest.left precedes CCMt11.traversed
+CCMt11.completed subClock RCSFinal.start
+CCMt11.begin coincides CCMt11.traversed
+CCMt11.traversed coincides CCMt11.completed
+RCSFinal.start coincides RCSFinal.exit
+RCSFinal.exit coincides RCSFinal.left
+RRMInitial.start coincides RRMInitil.exit
+RRMInitial.exit coincides RRMInitial.left
+CCMt15.tr subClock MalFunction
+CCMt15.reached coincides RRMInitial.start
+CCMt15.reached precedes CCMt15.begin
+CCMt15.tr precedes CCMt15.begin
+RRMInitial.left precedes CCMt15.traversed
+CCMt15.completed subClock RMaintainNotify.start 
+CCMt15.begin coincides CCMt15.traversed 
+CCMt15.traversed coincides CCMt15.completed
+RMaintainNotify.start precedes RMaintainNotify.exit
+RMaintainNotify.exit precedes RMaintainNotify.left
+RMaintainNotify.start coincides RMaintainNotify.ey.start
+RMaintainNotify.ey.end precedes RMaintainNotify.exit
+RMaintainNotify.ey.start coincides RMaintainNotify.ey.end
+RMaintainNotify.ey.start coincides NotifyFault
+RMaintainNotify.exit coincides RMaintainNotify.et.start
+RMaintainNotify.left coincides RMaintainNotify.et.end
+RMaintainNotify.et.start coincides RMaintainNotify.et.end
+RMaintainNotify.et.start coincides MaintainerOntheWay
+RMaintainNotify.ey.end precedes RMaintainNotify.et.start
+CCMt16.tr = RMaintainNotify.ey.end sup RMaintainNotify.et.end
+CCMt16.reached coincides RMaintainNotify.start
+CCMt16.reached precedes CCMt16.begin
+CCMt16.tr precedes CCMt16.begin
+RMaintainNotify.left precedes CCMt16.traversed
+CCMt16.completed subClock RRMFinal.start
+CCMt16.begin coincides CCMt16.traversed
+CCMt16.traversed coincides CCMt16.completed
+RRMFinal.start coincides RRMFinal.exit
+RRMFinal.exit coincides RRMFinal.left
+RRCInitial.start coincides RRCInitial.exit
+RRCInitial.exit coincides RRCInitial.left
+CCMt17.tr subClock FormCancelCom
+CCMt17.reached coincides RRCInitial.start
+CCMt17.reached precedes CCMt17.begin
+CCMt17.tr precedes CCMt17.begin
+RRCInitial.left precedes CCMt17.traversed
+CCMt17.completed subClock SendCancel.start 
+CCMt17.begin coincides CCMt17.traversed 
+CCMt17.traversed coincides CCMt17.completed
+SendCancel.start precedes SendCancel.exit
+SendCancel.exit precedes SendCancel.left
+SendCancel.start coincides SendCancel.ey.start
+SendCancel.ey.end  strictPre  SendCancel.exit
+SendCancel.ey.start coincides SendCancel.ey.end
+SendCancel.ey.start coincides ComRobotCancel
+SendCancel.start  strictPre SendCancel.do.start
+SendCancel.do.end  strictPre SendCancel.exit
+SendCancel.do.completed exclude SendCancel.do.aborted
+SendCancel.do.start  strictPre SendCancel.do.end
+SendCancel.do.start coincides SendCancel.start
+SendCancel.do.end coincides SendCancel.end
+SendCancel.exit coincides SendCancel.et.start
+SendCancel.left coincides SendCancel.et.end
+SendCancel.et.start coincides SendCancel.et.end
+SendCancel.et.start coincides CMSCancelFeedBack
+SendCancel.ey.end  strictPre SendCancel.et.start
+SendCancel.do.end  strictPre SendCancel.et.start
+CCMt18.trS = AssignRequest.ey.end sup AssignRequest.do.end 
+CCMt18.tr = CCMt18.trS sup AssignRequest.et.end
+CCMt18.reached coincides SendCancel.start
+CCMt18.reached precedes CCMt18.begin
+CCMt18.tr precedes CCMt18.begin
+SendCancel.left precedes CCMt18.traversed
+CCMt18.completed subClock RRCFinal.start
+CCMt18.begin coincides CCMt18.traversed
+CCMt18.traversed coincides CCMt18.completed
+RRCFinal.start coincides RRCFinal.exit
+RRCFinal.exit coincides RRCFinal.left
+CRAInitial.start coincides CRAInitial.exit
+CRAInitial.exit coincides CRAInitial.left
+CCMt19.tr subClock RtSignifyArrival
+CCMt19.reached coincides CRAInitial.start
+CCMt19.reached precedes CCMt19.begin
+CCMt19.tr precedes CCMt19.begin
+CRAInitial.left precedes CCMt19.traversed
+CCMt19.completed subClock ArrivalNotify.start 
+CCMt19.begin coincides CCMt19.traversed 
+CCMt19.traversed coincides CCMt19.completed
+ArrivalNotify.start precedes ArrivalNotify.exit
+ArrivalNotify.exit precedes ArrivalNotify.left
+ArrivalNotify.start coincides ArrivalNotify.ey.start
+ArrivalNotify.ey.end precedes ArrivalNotify.exit
+ArrivalNotify.ey.start coincides ArrivalNotify.ey.end
+ArrivalNotify.ey.start coincides ReportRobotArrival
+ArrivalNotify.exit coincides ArrivalNotify.et.start
+ArrivalNotify.left coincides ArrivalNotify.et.end
+ArrivalNotify.et.start coincides ArrivalNotify.et.end
+ArrivalNotify.et.start coincides SigComBack
+ArrivalNotify.ey.end precedes ArrivalNotify.et.start
+CCMt20.tr = ArrivalNotify.ey.end sup ArrivalNotify.et.end
+CCMt20.reached coincides ArrivalNotify.start
+CCMt20.reached precedes CCMt20.begin
+CCMt20.tr precedes CCMt20.begin
+ArrivalNotify.left precedes CCMt20.traversed
+CCMt20.completed subClock CRAFinal.start
+CCMt20.begin coincides CCMt20.traversed
+CCMt20.traversed coincides CCMt20.completed
+CRAFinal.start coincides CRAFinal.exit
+CRAFinal.exit coincides CRAFinal.left
+CCMt12.tr subClock Rconntimeout
+CCMt12.reached coincides CMIdle.start
+CCMt12.reached precedes CCMt12.begin
+CCMt12.tr precedes CCMt12.begin
+CMIdle.left precedes CCMt12.traversed
+CCMt12.completed subClock RConnFail.start 
+CCMt12.begin coincides CCMt12.traversed 
+CCMt12.traversed coincides CCMt12.completed
+RConnFail.start precedes RConnFail.exit
+RConnFail.exit precedes RConnFail.left
+RConnFail.start coincides RConnFail.ey.start
+RConnFail.ey.start  strictPre  RConnFail.ey.end
+RConnFail.ey.start coincides UpdateRStatus.start
+RConnFail.ey.end coincides UpdateRStatus.end
+RConnFail.exit coincides RConnFail.left
+RConnFail.exit coincides RConnFail.ey.end
+CCMt13.tr coincides RConnFail.ey.end
+CCMt13.reached coincides RConnFail.start
+CCMt13.reached precedes CCMt13.begin
+CCMt13.tr precedes CCMt13.begin
+RConnFail.left precedes CCMt13.traversed
+CCMt13.completed subClock CMIdle.start
+CCMt13.begin coincides CCMt13.traversed
+CCMt13.traversed coincides CCMt13.completed
+CCMt14.tr subClock CMSStopService
+CCMt14.reached coincides RConnFail.start
+CCMt14.reached precedes CCMt14.begin
+CCMt14.tr precedes CCMt14.begin
+RConnFail.left precedes CCMt14.traversed
+CCMt14.completed subClock CCMFinal.start
+CCMt14.begin coincides CCMt14.traversed
+CCMt14.traversed coincides CCMt14.completed
+VChoiceU = up union down 
+VChoice = VChoiceU union keep
+ReceiveVCmdU = SendExpectV union brake 
+ReceiveVCmd = ReceiveVCmdU union Twist
+StartDly coincides turn
+RDInitialParams.start coincides RDCheckSensors
+RDCheckSensors = RDSensorsNormal union RDSensorsFault
+RDFaultOccur = RDSensorFault union Collision
+RDCheckStaus= RDFaultOccur union RDStatusNormal
+RDCheckStaus = idealClk discretizedBy 10
+OpenCabin alternate CloseCabin
+ConfirmGoods.start = TakeinGoods.start union TakeoutGoods.start
+ConfirmGoods.end= TakeinGoods.end union TakeoutGoods.end
+ComputeCmdU = up union down 
+ComputeCmd = ComputeCmdU union keep
+RDMaintain.end = RDStatusNormal union RDStatusAbNormal
+SelectRDSensorConfig = UrgRDConfStart union RegRDConfStart
+ConfirmArrival = ConfirmDelArrival union ConfirmReyArrival
+ConfirmReyArrival strictPre TakeinGoods.start
+ConfirmDelArrival strictPre TakeoutGoods.start 
+NotifyUsersRobotArrival = NotifyPrepareGoods union NotifyReceiveGoods
+faultReasonaltbegin = Robot_ReportFault_snd union CMSDU_RobotLostComLong_snd
+CMSDU_RobotLostComLong_snd  strictPre  RobotLostComLong
+RobotLostComLong  strictPre  CMSDU_RobotLostComLong_rec
+Robot_ReportFault_snd  strictPre  ReportFault
+ReportFault  strictPre  CMSCom_ReportFault_rec
+faultReasonaltend = CMSCom_ReportFault_rec union CMSDU_RobotLostComLong_rec
+faultReasonaltbegin alternate faultReasonaltend
+faultReasonaltend  strictPre  CMSCom_NotifyFault_snd
+CMSCom_NotifyFault_snd  strictPre  NotifyFault
+NotifyMalFunction subClock NotifyFault
+NotifyFault  strictPre  CMSRU_NotifyFault_rec
+CMSRU_NotifyFault_rec  strictPre  CMSRU_MatchRobot_snd
+CMSRU_MatchRobot_snd  strictPre  MatchRobot 
+MatchRobot  strictPre  CMSDU_MatchRobot_rec
+CMSDU_MatchRobot_rec  strictPre  CMSDU_UpdateandPullInfo_snd
+CMSDU_UpdateandPullInfo_snd  strictPre  UpdateandPullInofo.start
+UpdateandPullInofo.start  strictPre  UpdateandPullInofo.end
+UpdateandPullInfo.end  strictPre  Databse_UpdateandPullInfo_rec
+Databse_UpdateandPullInfo_rec  strictPre  Database_Info_snd
+Database_Info_snd  strictPre  Info
+Info  strictPre  CMSDU_Info_rec
+CMSDU_Info_rec  strictPre  CMSDU_NotifyMaintain_snd
+CMSDU_NotifyMaintain_snd  strictPre  NotifyMaintain
+NotifyMaintain  strictPre  Maintainer_NotifyMaintain_rec
+CMSDU_NotifyMaintain_snd   strictPre  CMSDU_NotifyDelay_snd
+CMSDU_NotifyDelay_snd  strictPre  NotifyDelay
+NotifyDelay  strictPre  User_NotifyDelay_rec
+Maintainer_NotifyMaintain_rec  strictPre  Maintainer_AcceptConfirm_snd
+CMSDU_NotifyDelay_snd  strictPre  Maintainer_AcceptConfirm_snd
+Maintainer_AcceptConfirm_snd  strictPre  AcceptConfirm
+AcceptConfirm  strictPre  CMSDU_AcceptConfirm_rec
+CMSDU_AcceptConfirm_rec  strictPre  CMSDU_MaintainerAccept_snd
+CMSDU_MaintainerAccept_snd  strictPre  MaintainerAccept
+MaintainerAccept  strictPre  CMSCom_MaintainerAccept_rec
+CMSCom_MaintainerAccept_rec  strictPre  CMSCom_MaintainerOntheWay_snd
+CMSCom_MaintainerOntheWay_snd  strictPre  MaintainerOntheWay
+MaintainerOntheWay  strictPre  Robot_MaintainerOntheWay_rec
+Robot_MaintainerOntheWay_rec  strictPre  Robot_DisplayInMaintain_snd
+Robot_DisplayInMaintain_snd  strictPre  DisplayInMaintain
+DisplayInMaintain  strictPre  Robot_DisplayInMaintain_rec
+Robot_RtSignifyReach_snd  strictPre  RtSignifyReach
+RtSignifyReach  strictPre  CMSCom_RtSignifyReach_rec
+CMSCom_RtSignifyReach_rec strictPre CMSCom_RehSigComBack_snd
+CMSCom_RehSigComBack_snd strictPre RehSigComBack
+RehSigComBack strictPre Robot_RehSigComBack_rec
+Robot_RehSigComBack_rec  strictPre  CMSCom_RobotReqReady_snd
+CMSCom_RobotReqReady_snd  strictPre  RobotReqReady
+RobotReqReady  strictPre  CMSRU_RobotReqReady_rec
+CMSRU_RobotReqReady_rec  strictPre  CMSRU_MatchRobotandReq_snd
+CMSRU_MatchRobotandReq_snd  strictPre  MatchRobotandReq
+MatchRobotandReq  strictPre  CMSDU_MatchRobotandReq_rec
+CMSDU_MatchRobotandReq_rec  strictPre   CMSDU_PullRobotRequest_snd
+CMSDU_PullRobotRequest_snd  strictPre  PullRobotRequest.start
+PullRobotRequest.start  strictPre  PullRobotRequest.end
+PullRobotRequest.end  strictPre  Database_RobotRequestInfo_snd
+Database_RobotRequestInfo_snd  strictPre  RobotRequestInfo
+RobotRequestInfo  strictPre  CMSDU_RobotRequestInfo_rec
+CMSDU_RobotRequestInfo_rec  strictPre  CMSDU_NotifyPrepareGoods_snd
+CMSDU_NotifyPrepareGoods_snd  strictPre  NotifyPrepareGoods
+NotifyPrepareGoods  strictPre  User_NotifyPrepareGoods_rec
+User_NotifyPrepareGoods_rec strictPre User_ConfirmReyArrival_snd
+User_ConfirmReyArrival_snd strictPre Robot_ConfirmReyArrival_rec
+Robot_RtSignifyDelivery_snd  strictPre  RtSignifyDelivery
+RtSignifyDelivery strictPre  CMSCom_RtSignifyDelivery_rec
+CMSCom_RtSignifyDelivery_rec strictPre CMSCom_DelSigComBack_snd
+CMSCom_DelSigComBack_snd strictPre DelSigComBack
+DelSigComBack strictPre Robot_DelSigComBack_rec
+Robot_DelSigComBack_rec  strictPre  CMSCom_NotifyDelivery_snd
+CMSCom_NotifyDelivery_snd  strictPre  NotifyDelivery
+NotifyDelivery  strictPre  CMSRU_NotifyDelivery_rec
+CMSRU_NotifyDelivery_rec  strictPre  CMSRU_MatchRobotandTask_snd
+CMSRU_MatchRobotandTask_snd  strictPre  MatchRobotandTask
+MatchRobotandTask  strictPre  CMSDU_MatchRobotandTask_rec
+CMSDU_MatchRobotandTask_rec  strictPre   CMSDU_PullTaskUser_snd
+CMSDU_PullTaskUser_snd  strictPre  PullTaskUser.start
+PullTaskUser.start  strictPre  PullTaskUser.end
+PullTaskUser.end  strictPre  Database_RobotTaskInfo_snd
+Database_RobotTaskInfo_snd  strictPre  RobotTaskInfo
+RobotTaskInfo  strictPre  CMSDU_RobotTaskInfo_rec
+CMSDU_RobotTaskInfo_rec  strictPre  CMSDU_NotifyReceiveGoods_snd
+CMSDU_NotifyReceiveGoods_snd  strictPre  NotifyReceiveGoods
+NotifyReceiveGoods  strictPre  User_NotifyReceiveGoods_rec
+User_NotifyReceiveGoods_rec strictPre User_ConfirmDelArrival_snd
+User_ConfirmDelArrival_snd strictPre ConfirmDelArrival
+ConfirmDelArrival strictPre Robot_ConfirmDelArrival_rec
+Admin_EnterReportPage_snd  strictPre  EnterReportPage
+EnterReportPage  strictPre  CMSUI_EnterReportPage_rec
+Admin_EnterReportPage_snd  strictPre  Admin_SelectReportParams_snd
+CMSUI_EnterReportPage_rec  strictPre  CMSUI_SelectReportParams_rec
+Admin_SelectReportParams_snd  strictPre  SelectReportParams
+SelectReportParams  strictPre  CMSUI_SelectReportParams_rec
+CMSUI_InfoInValid_snd  strictPre  InfoInvalid
+InfoInValid  strictPre Admin_InfoInValid_rec
+Admin_InfoInValid_rec  strictPre  Admin_reSelectReportParams_snd
+Admin_reSelectReportParams_snd  strictPre  reSelectReportParams
+reSelectReportParamsstrictPre  CMSUI_reSelectReportParams_rec
+rloop1X= CMSUI_reSelectReportParams_rec filteredBy 001
+rloop1X  strictPre Admin_submitRepReq_snd
+Admin_submitRepReq_snd strictPre submitRepReq
+submitRepReq strictPre CMSUI_submitRepReq_rec
+CMSUI_submitRepReq_rec strictPre CMSUI_FormRequest_snd
+CMSUI_FormRequest_snd  strictPre  FormRequest
+FormRequest  strictPre  CMSDU_FormRequest_rec
+CMSDU_FormRequest_rec  strictPre  CMSDU_ConnDataset_snd
+CMSDU_ConnDataset_snd  strictPre  ConnDataset.start
+ConnDataset.end  strictPre  Database_ConnDataset_rec
+Database_ConnDataset_rec  strictPre  Database_ConnDatasetFail_snd
+Database_ConnDatasetFail_snd  strictPre  ConnDatasetFail
+ConnDatasetFail  strictPre  CMSDU_ConnDatasetFail_rec
+CMSDU_ConnDatasetFail_rec  strictPre  CMSDU_reConDataset_snd
+CMSDU_reConDataset_snd  strictPre  reConDataset.start
+reConDataset.start  strictPre  reConDataset.end
+reConDataset.start subClock ConnDataset.start
+reConDataset.end subClock ConnDataset.end
+reConDataset.start strictPre reConDataset.end
+ConnDataset.start strictPre ConnDataset.end
+reConDataset.end  strictPre  Database_reConDataset_rec
+rloop2x=Database_reConDataset_rec filteredBy 001
+rloop2x  strictPre  CMalt2begin
+ralt2begin=Dconntimeout  union  DconnSucc
+Dconntimeout  exclude  DconnSucc
+Dconntimeout coincides Database_DatabaseConnFault_snd
+DconnSucc coincides CMSDU_InvokeStoreProcedure_snd
+Database_DconTimeout_snd  strictPre  DconTimeout
+DatabaseConnFault  strictPre  CMSDU_DatabaseConnFault_rec
+CMSDU_InvokeStoreProcedure_snd  strictPre  InvokeStoreProcedure
+InvokeStoreProcedure  strictPre  Database_InvokeStoreProcedure_rec
+Database_InvokeStoreProcedure_rec  strictPre  Database_ExcuteStorepro_snd
+Database_ExcuteStorepro_snd  strictPre  ExcuteStorepro.start
+ExcuteStorepro.start  strictPre  ExcuteStorepro.end
+ExcuteStorepro.end  strictPre  Database_ExcuteStorepro_rec
+Database_ExcuteStorepro_rec  strictPre  Database_ResultReturn_snd
+Database_ResultReturn_snd  strictPre  ResultReturn
+ResultReturn  strictPre  CMSDU_ResultReturn_rec
+ralt2end = CMSDU_ResultReturn_rec union CMDU_DatabaseConnFault_rec
+ralt2begin  alternate  ralt2end
+ralt2end strictPre  CMSDU_ParseReturn_snd
+reWrapUsrRole subClock WrapUsrRole
+CMSDU_ParseReturn_snd  strictPre  ParseReturn.start
+ParseReturn.start  strictPre  ParseReturn.end
+ParseReturn.end  strictPre  CMSDU_ParseReturn_rec
+CMSDU_ParseReturn_rec  strictPre  CMSDU_reportData_snd
+CMSDU_reportData_snd  strictPre  reportData
+reportData strictPre  CMSUI_reportData_rec
+CMSUI_reportData_rec  strictPre  CMSUI_FormReport_snd
+CMSUI_FormReport_snd  strictPre  FormReport.start
+FormReport.start  strictPre  FormReport.end
+FormReport.end  strictPre  CMSUI_FormReport_rec
+CMSUI_FormReport_rec  strictPre  CMSUI_DisplayReport_snd
+CMSUI_DisplayReport_snd  strictPre  DisplayReport
+DisplayReport  strictPre  Admin_DisplayReport_rec
+Admin_DisplayReport_rec  strictPre  Admin_download_snd
+Admin_download_snd strictPre download
+download strictPre  CMSUI_download_rec
+CMSUI_download_rec  strictPre  CMSUI_requestFile_snd
+CMSUI_requestFile_snd  strictPre  requestFile
+requestFile  strictPre  CMSDU_requestFile_rec
+CMSDU_requestFile_rec  strictPre  CMSDU_returnFile_snd
+CMSDU_returnFile_snd  strictPre  returnFile
+returnFile  strictPre  CMSUI_returnFile_rec
+CMSUI_returnFile_rec  strictPre  CMSUI_storeFile_snd
+CMSUI_storeFile_snd  strictPre  storeFile
+storeFile  strictPre  Admin_storeFile_rec
+Database_CheckAdminTable_rec strictPre alalterbegin
+alalterbegin=CMSDU_AdminValid union CMSDU_AdmininValid
+alalterend= Admin_DisplayResults_rec union Admin_AdminLoginReject_rec
+alalterbegin alternate alalterend
+Admin_AdminLoginSucc_rec strictPre UMalt1begin
+UMalt1begin=Admin_EnterAddUsrPage_snd union Admin_EnterEditUsrPage_snd
+Admin_EnterEditUsrPage_snd exclude Admin_EnterEditUsrPage_snd
+UMalt1end=CSMDU_FormAddUsrStams_rec union UMalt3end
+CSMDU_FormAddUsrStams_rec exclude UMalt3end
+UMalt1begin alternate UMalt1end
+Admin_EnterAddUsrPage_snd  strictPre  EnterAddUsrPage
+EnterAddUsrPage strictPre CMSUI_EnterAddUsrPage_rec
+CMSUI_EnterAddUsrPage_rec  strictPre  CMSUI_FillPersonInfo_rec
+Admin_EnterAddUsrPage_snd  strictPre  Admin_FillPersonInfo_snd
+Admin_FillPersonInfo_snd  strictPre  FillPersonInfo.start
+FillPersonInfo.start  strictPre  FillPersonInfo.end
+FillPersonInfo.end  strictPre  CMSUI_FillPersonInfo_rec
+Admin_EnterAddUsrPage_snd  strictPre  Admin_Submit_snd
+Admin_Submit_snd  strictPre  Submit
+Submit  strictPre  CMSUI_Submit_rec
+CMSUI_FillPersonInfo_rec  strictPre  CMSUI_UInfoInvalid_snd
+CMSUI_UInfoInvalid_snd  strictPre  UInfoInvalid
+UInfoInvalid  strictPre  Admin_UInfoInvalid_rec
+Admin_UInfoInvalid_rec  strictPre  Admin_reFillPersonInfo_snd
+Admin_reFillPersonInfo_snd  strictPre  reFillPersonInfo.start
+reFillPersonInfo.start  strictPre  reFillPersonInfo.end
+reFillPersonInfo.end  strictPre  CMSUI_reFillPersonInfo_rec
+Admin_reFillPersonInfo_snd  strictPre  Admin_reSubmit_snd
+Admin_reSubmit_snd  strictPre  reSubmit
+reSubmit  strictPre  CMSUI_reSubmit_rec
+UMloop1x = CMSUI_reSubmit_rec filteredBy 01
+UMloop1x  strictPre  CMSUI_FormUsrInfo_snd
+CMSUI_FormUsrInfo_snd  strictPre  FormUsrInfo
+FormUsrInfo  strictPre  CMSDU_FormUsrInfo_rec
+CMSDU_FormUsrInfo_rec  strictPre  CMSDU_TempStore_snd
+CMSDU_TempStore_snd  strictPre  TempStore
+TempStore  strictPre CMSDU_TempStore_rec
+UMloop1x  strictPre  Admin_AssignRoleAuthority_snd
+Admin_AssignRoleAuthority_snd  strictPre  AssignRoleAuthority.start
+AssignRoleAuthority.start  strictPre  AssignRoleAuthority.end
+AssignRoleAuthority.end  strictPre  CMSUI_AssignRoleAuthority_rec
+CMSUI_AssignRoleAuthority_rec  strictPre  CMSUI_WrapUsrRole_snd
+CMSUI_WrapUsrRole_snd  strictPre  WrapUsrRole
+WrapUsrRole  strictPre  CMSDU_WrapUsrRole_rec
+CMSDU_WrapUsrRole_rec  strictPre  CMSDU_RoleAuthInvalid_snd
+CMSDU_RoleAuthInvalid_snd  strictPre  RoleAuthInvalid
+RoleAuthInvalid  strictPre  CMSUI_RoleAuthInvalid_rec
+CMSUI_RoleAuthInvalid_rec  strictPre  CMSUI_DisplayInvalidReason_snd
+CMSUI_DisplayInvalidReason_snd  strictPre  DisplayInvalidReason
+DisplayInvalidReason  strictPre  Admin_DisplayInvalidReason_rec
+Admin_DisplayInvalidReason_rec  strictPre  Admin_reAssignRoleAuthority_snd
+Admin_reAssignRoleAuthority_snd  strictPre  reAssignRoleAuthority.start
+reAssignRoleAuthority.start  strictPre  reAssignRoleAuthority.end
+reAssignRoleAuthority  strictPre  CMSUI_reAssignRoleAuthority_rec
+CMSUI_reAssignRoleAuthority_rec  strictPre  CMSUI_reWrapUsrRole_snd
+CMSUI_reWrapUsrRole_snd  strictPre  reWrapUsrRole
+reWrapUsrRole  strictPre  CMSDU_reWrapUsrRole_rec
+CMloop2x=CMSDU_reWrapUsrRole_rec filteredBy 01
+CMloop2x  strictPre  CMSDU_CreateUsrObj_snd
+CMSDU_CreateUsrObj_snd  strictPre  CreateUsrObj
+CreateUsrObj  strictPre  CMSDU_CreateUsrObj_rec
+CMSDU_CreateUsrObj_rec  strictPre  CMSDU_FormAddUsrStams_snd
+CMSDU_FormAddUsrStams_snd  strictPre  FormAddUsrStams
+FormAddUsrStams  strictPre  CMSDU_FormAddUsrStams_re
+Admin_EnterEditUsrPage_snd  strictPre  EnterEditUsrPage
+EnterEditUsrPage  strictPre  CMSUI_EnterEditUsrPage_rec
+Admin_EnterEditUsrPage_snd  strictPre  Admin_QueryUsrs_snd
+Admin_QueryUsrs_snd  strictPre  CMSUI_QueryUsrs_rec
+CMSUI_EnterEditUsrPage_rec  strictPre  CMSUI_QueryUsrs_rec
+CMSUI_QueryUsrs_rec strictPre  CMSUI_FormUsrQryReq_snd
+CMSUI_FormUsrQryReq_snd  strictPre  FormUsrQryReq
+FormUsrQryReq  strictPre  CMSDU_FormUsrQryReq_rec
+CMSDU_FormUsrQryReq_rec  strictPre  CMSDU_FormUsrQryStams_snd
+CMSDU_FormUsrQryStams_snd  strictPre  FormUsrQryStams
+FormUsrQryStams  strictPre  CMSDU_FormUsrQryStams_rec
+CMSDU_FormUsrQryStams_rec  strictPre  CMSDU_DConn_snd
+CMSDU_ConnDataset_snd  strictPre  ConnDataset.start
+Database_ConnDataset_rec  strictPre  Database_ConnDatasetFail_snd
+Database_ConnDatasetFail_snd  strictPre  ConnDatasetFail
+ConnDatasetFail  strictPre  CMSDU_ConnDatasetFail_rec
+CMSDU_ConnDatasetFail_rec  strictPre  CMSDU_reConnDataset_snd
+CMSDU_reConnDataset_snd  strictPre  reConnDataset.start
+reConnDataset.end  strictPre  Database_reConnDataset_rec
+CMloop3x = Database_reConnDataset_rec filteredBy 01
+CMloop3x  strictPre  CMalt2begin
+CMalt2begin=Dconntimeout  union  DconSucc
+Dconntimeout coincides Database_DatabaseConnFault_snd
+DconSucc coincides CMSDU_SendUsrQryStams_snd
+CMSDU_SendUsrQryStams_snd  strictPre  SendUsrQryStams.start
+SendUsrQryStams.start  strictPre  SendUsrQryStams.end
+SendUsrQryStams.end  strictPre  Database_SendUsrQryStams_rec
+Database_SendUsrQryStams_rec  strictPre  Database_ExcuteUsrQry_snd
+Database_ExcuteUsrQry_snd  strictPre  ExcuteUsrQry.start
+ExcuteUsrQry.start  strictPre  ExcuteUsrQry.end
+ExcuteUsrQry.end  strictPre  Database_ExcuteUsrUsrQry_rec
+Database_UsrExcuteUsrQry_rec  strictPre  Database_UsrQryResult_snd
+Database_UsrQueryResult_snd  strictPre  UsrQryResult
+UsrQryResult  strictPre  CMSDU_UsrQryResult_rec
+Database_DconTimeout_snd  strictPre  DconTimeout
+DconTimeout  strictPre  CMSDU_DconTimeout_rec
+CMalt2end = CMSDU_UsrQueryResult_rec union CMSDU_DatabaseConnFault_rec
+CMSDU_UsrQryResult_rec exclude CMSDU_DatabaseConnFault_rec
+CMalt2start alternate CMalt2end
+CMalt2end  strictPre  CMSDU_ParseUsrQryReturn_snd
+CMSDU_ParseUsrQryReturn_snd  strictPre  ParseUsrQryReturn.start
+ParseUsrQryReturn.start  strictPre  ParsUsrQryReturn.end
+ParseUsrQryReturn.end  strictPre  CMSDU_ParseUsrQryReturn_rec
+CMSDU_ParseUsrQryReturn_rec  strictPre  CMSDU_UsrQryReturn_snd
+CMSDU_UsrQryReturn_snd  strictPre  UsrQryReturn
+UsrQryReturn  strictPre  CMSUI_UsrQryReturn_rec
+CMSUI_UsrQryReturn_rec  strictPre  CMSUI_DisplayUsrList_snd
+CMSUI_DisplayUsrList_snd  strictPre  DisplyUsrList
+DisplyUsrList  strictPre  Admin_DisplyUsrList_rec
+Admin_DisplyUsrList_rec  strictPre  CMalt3begin
+CMalt3begin = Admin_SelectUsrs_snd union Admin_SelectUsrtoChag_snd
+Admin_SelectUsrs_snd exclude Admin_SelectUsrtoChag_snd
+Admin_SelectUsrs_snd  strictPre  SelectUsrs
+SelectUsrs  strictPre  CMSUI_SelectUsrs_rec
+CMSUI_SelectUsrs_rec  strictPre  CMSUI_DeleteSelectedUsrs_rec
+Admin_SelectUsrs_snd  strictPre  Admin_DeleteSelectedUsrs_snd
+Admin_DeleteSelectedUsrs_snd  strictPre  DeleteSelectedUsrs
+DeleteSelectedUsrs  strictPre  CMSUI_DeleteSelectedUsrs_rec
+CMSUI_DeleteSelectedUsrs_rec  strictPre  CMSUI_FormDelUsrRequest_snd
+CMSUI_FormDelUsrRequest_snd  strictPre  FormDelUsrRequest
+FormDelUsrRequest  strictPre  CMSDU_FormDelUsrRequest_rec
+CMSDU_FormDelUsrRequest_rec  strictPre  CMSDU_FormDelUsrStams_snd
+CMSDU_FormDelUsrStams_snd  strictPre  FormDelUsrStams
+FormDelUsrStams  strictPre  CMSDU_FormDelUsrStams_rec
+Admin_SelectUsrtoChag_snd  strictPre  SlectUsrtoChag
+SlectUsrtoChag  strictPre  CMSUI_SlectUsrtoChag_rec
+Admin_SelectUsrtoChag_snd  strictPre  Admin_FillUsrChanges_snd
+Admin_FillUsrChanges_snd  strictPre  FillUsrChanges.start
+FillUsrChanges.start  strictPre  FillUsrChanges.end
+FillUsrChanges.end  strictPre  CMSUI_FillUsrChanges_rec
+CMSUI_SlectUsrtoChag_rec  strictPre  CMSUI_FillUsrChanges_rec
+Admin_FillUsrChanges_snd  strictPre  Admin_ChgUsrSubmit_snd
+Admin_ChgUsrSubmit_snd  strictPre  ChgUsrSubmit
+ChgUsrSubmit  strictPre  CMSUI_ChgUsrSubmit_rec
+CMSUI_FillChanges_rec  strictPre  CMSUI_ChgUsrSubmit_rec
+CMSUI_ChgUsrSubmit_rec  strictPre  CMSUI_FormUsrChanges_snd
+CMSUI_FormUsrChanges_snd  strictPre  FormUsrChanges
+FormUsrChanges  strictPre  CMSDU_FormUsrChanges_rec
+CMSDU_FormUsrChanges_rec  strictPre  CMSDU_CheckUsrChanges_snd
+CMSDU_CheckUsrChanges_snd  strictPre  CheckUsrChanges
+CheckUsrChanges  strictPre  CMSDU_CheckUsrChanges_rec
+CMSDU_CheckUsrChanges_rec  strictPre  CMSDU_UsrChagInvalid_snd
+CMSDU_UsrChagInvalid_snd  strictPre  UsrChagInvalid
+UsrChagInvalid  strictPre  CMSUI_UsrChagInvalid_rec
+CMSUI_UsrChagInvalid_rec  strictPre  CMSUI_DisplayUsrChagInvalid_snd
+CMSUI_DisplayUsrChagInvalid_snd  strictPre  DisplayUsrChagInvalid
+DisplayUsrChagInvalid  strictPre  Admin_DisplayUsrChagInvalid_rec
+Admin_DisplayUsrChagInvalid_rec  strictPre  Admin_reFillUsrChanges_snd
+Admin_reFillUsrChanges_snd  strictPre  reFillUsrChanges.start
+reFillUsrChanges.start  strictPre  reFillUsrChanges.end
+reFillUsrChanges.end  strictPre  CMSUI_reFillUsrChanges_rec
+CMSUI_reFillUsrChanges_rec  strictPre  CMSUI_reFormUsrChanges_snd
+Admin_reFillUsrChanges_snd  strictPre  Admin_reChgUsrSubmit_snd
+Admin_reChgUsrSubmit_snd  strictPre  reChgUsrSubmit
+reChgUsrSubmit  strictPre  CMSUI_reChgUsrSubmit_rec
+CMSUI_reFillUsrChanges_rec  strictPre  CMSUI_reChgUsrSubmit_rec
+CMSUI_reChgUsrSubmit_rec  strictPre  CMSUI_reFormUsrChanges_snd
+CMSUI_reFormUsrChanges_snd  strictPre  reFormChanges
+reFormUsrChanges  strictPre  CMSDU_reFormUsrChanges_rec
+CMloop4x= CMSDU_reFormUsrChanges_rec filteredBy 01
+CMloop4x  strictPre  CMSDU_FormUsrChagStams_snd
+CMSDU_FormUsrChagStams_snd  strictPre  FormUsrChagStams
+FormUsrChagStams  strictPre  CMSDU_FormUsrChagStams_rec
+CMalt3end = CMSDU_FormUsrChagStams_rec union CMSDU_FormUsrDelStams_rec
+CMalt3start alternate CMalt3end
+CMalt1start = Admin_EnterChagUsrPage_snd union Admin_EnterAddUsrPage_snd
+Admin_EnterChagUsrPage_snd exclude  Admin_EnterAddUsrPage_snd
+CMalt1end = CMalt3end union CMloop2x 
+CMalt1begin alternate CMalt1end
+CMalt1end  strictPre  CMSDU_ConnDataset_snd2
+CMSDU_ConnDataset_snd2  strictPre  ConnDataset.start
+ConnDataset.end  strictPre  Database_ConnDataset_rec2
+Database_DConnDataset_rec2  strictPre  Database_ConnDatasetFail_snd2
+Database_ConnDatasetFail_snd2  strictPre  ConnDatasetFail
+ConnDatasetFail  strictPre  CMSDU_ConnDatasetFail_rec
+CMSDU_DConnDatasetFail_rec2  strictPre  CMSDU_reConnDataset_snd2
+CMSDU_reConnDataset_snd2  strictPre  reDConnDataset.start
+reConnDataset.end  strictPre  Database_reConnDataset_rec2
+CMloop5x = Database_reConnDataset_rec2 filteredBy 01
+CMloop5x  strictPre  CMalt4begin
+CMalt4begin = Database_DatabaseConnFault_snd2 union CMSDU_SendStams_snd
+Database_DatabaseConnFault_snd2 exclude CMSDU_SendStams_snd
+Database_DatabaseConnFault_snd2  strictPre  DatabaseConnFault
+DatabaseConnFault  strictPre  CMSDU_DatabaseConnFault_rec2
+CMSDU_SendStams_snd  strictPre  SendStams.start
+SendStams.start  strictPre  SendStams.end
+SendStams.end  strictPre  Database_SendStams_rec
+Database_SendStams_rec  strictPre  Database_ExecuteStams_snd
+Database_ExecuteStams_snd  strictPre  ExecuteStams.start
+ExecuteStams.start  strictPre  ExecuteStams.end
+ExecuteStams.end  strictPre  Database_ExecuteStams_rec
+Database_ExecuteFeedback_rec  strictPre  Database_ExecuteFeedback_snd
+Database_ExecuteFeedback_snd  strictPre  ExecuteFeedback
+ExecuteFeedback  strictPre  CMSDU_ExecuteFeedback_rec
+CMalt4end=CMSDU_ExecuteFeedback_rec union CMSDU_DatabaseConnFault_rec2
+CMalt4begin alternate CMalt4end
+CMalt4end  strictPre  CMSDU_ParseFeedback_snd
+CMSDU_ParseFeedback_snd  strictPre  ParseFeedback.start
+ParseFeedback.start  strictPre  ParseFeedback.end
+ParseFeedback.end  strictPre CMSDU_ParseFeedback_rec
+CMSDU_ParseFeedback_rec  strictPre  CMSDU_SendResults_snd
+CMSDU_SendResults_snd  strictPre  SendResults
+SendResults  strictPre  CMSUI_SendResults_rec
+CMSDU_SendResults_snd  strictPre  CMSDU_SendConfirmMsg_snd
+CMSDU_SendConfirmMsg_snd  strictPre  SendConfirmMsg
+SendConfirmMsg  strictPre  User_SendConfirmMsg_rec
+CMSUI_SendResults_rec  strictPre  CMSUI_DisplayResults_snd
+CMSUI_DisplayResults_snd  strictPre  DisplayResults
+DisplayResults  strictPre  Admin_DisplayResults_rec
+operatebegin = Admin_EnterAddRobotPage_snd union EnterEditRobotPage_snd
+Admin_EnterAddRobotPage_snd exclude EnterEditRobotPage_snd
+operateend = CMSDM_FormAddRobotStams_rec union Editend
+operatebegin alternate operateend
+Admin_EnterAddRobotPage_snd  strictPre  EnterAddRobotPage
+EnterAddRobotPage  strictPre  CMSUI_EnterAddRobotPage_rec
+Admin_EnterAddRobotPage_snd  strictPre  Admin_FillRobotInfo_snd
+Admin_FillRobotInfo_snd  strictPre  FillRobotInfo.start
+FillRobotInfo.end  strictPre  FillRobotInfo.end
+FillRobotInfo.end  strictPre  CMSUI_FillRobotInfo_rec
+CMSUI_EnterAddRobotPage_rec  strictPre  CMSUI_FillRobotInfo_rec
+Admin_FillRobotInfo_snd  strictPre  Admin_AddRobotSubmit_snd
+Admin_AddRobotSubmit_snd  strictPre  AddRobotSubmit
+AddRobotSubmit  strictPre  CMSUI_AddRobotSubmit_rec
+CMSUI_AddRobotSubmit_rec  strictPre  CMSUI_RInfoInvlid_snd
+CMSUI_RInfoInvlid_snd  strictPre  RInfoInvlid
+RInfoInvlid  strictPre  Admin_RInfoInvlid_rec
+Admin_FillRobotInfo_snd  strictPre  Admin_RInfoInvlid_rec
+Admin_RInfoInvlid_rec  strictPre  Admin_reFillRobotInfo_snd
+Admin_reFillRobotInfo_snd  strictPre  reFillRobotInfo.start
+reFillRobotInfo.start  strictPre  reFillRobotInfo.end
+reFillRobotInfo.end  strictPre  CMSUI_reFillRobotInfo_rec
+Admin_reFillRobotInfo_snd  strictPre  Admin_reAddRobotSubmit_snd
+CMSUI_reFillRobotInfo_rec  strictPre  CMSUI_reAddRobotSubmit_rec
+Admin_reAddRobotSubmit_snd  strictPre  reAddRobotSubmit
+reAddRobotSubmit  strictPre  CMSUI_reAddRobotSubmit_rec
+RobotInvalidx = CMSUI_reAddRobotSubmit_rec filteredBy 01
+RobotInvalidx  strictPre  CMSUI_FormRobotInfo_snd
+CMSUI_FormRobotInfo_snd strictPre FormRobotInfo
+FormRobotInfo strictPre  CMSDU_FormRobotInfo_rec
+CMSDU_FormRobotInfo_rec  strictPre  CMSDU_CreateRobotObj_snd
+CMSDU_CreateRobotObj_snd  strictPre  CreateRobotObj
+CreateRobotObj  strictPre  CMSDU_CreateRobotObj_rec
+CMSDU_CreateRobotObj_snd strictPre CMSDU_FormAddRobotStams_snd
+CMSDU_FormAddRobotStams_snd strictPre FormAddRobotStams
+FormAddRobotStams strictPre CMSDU_FormAddRobotStams_rec
+Admin_EnterEditRobotPage_snd  strictPre  CMSUI_EnterEditRobotPage_rec
+Admin_EnterEditRobotPage_snd  strictPre  Admin_QueryRobots_snd
+CMSUI_EnterEditRobotPage_rec strictPre CMSUI_QueryRobots_rec
+Admin_EnterEditRobotPage_snd  strictPre  EnterEditRobotPage
+EnterEditRobotPage  strictPre CMSUI_QueryRobots_rec
+CMSUI_QueryRobots_rec strictPre CMSUI_FormRobotQryReq_snd
+CMSUI_FormRobotQryReq_snd  strictPre  FormRobotQryReq
+FormRobotQryReq  strictPre  CMSDU_FormRobotQryReq_rec
+CMSDU_FormRobotQryReq_rec  strictPre  CMSDU_FormRobotQryStams_snd
+CMSDU_FormRobotQryStams_snd  strictPre  FormRobotQryStams
+FormRobotQryStams  strictPre  CMSDU_FormRobotQryStams_rec
+CMSDU_FormRobotQryStams_rec strictPre  CMSDU_ConnDataset_snd
+CMSDU_ConnDataset_snd  strictPre  ConnDataset.start
+dfailx = Database_reConnDataset_rec filteredBy 01
+dfailx  strictPre  qrybegin
+qrybegin = Database_DatabaseConnFault_snd union CMSDU_SendRobotQryStams_snd 
+Database_DatabaseConnFault_snd exclude CMSDU_SendRobotQryStams_snd 
+qryend = CMSDU_DatabaseConnFault_rec union CMSDU_RobotQryResult_rec
+Database_DatabaseConnFault_snd strictPre DatabaseConnFault
+DatabaseConnFault strictPre CMSDU_DatabaseConnFault_rec
+qrybegin alternate qryend
+CMSDU_SendRobotQryStams_snd  strictPre  SendRobotQryStams.start
+SendRobotQryStams.start  strictPre  SendRobotQryStams.end
+SendRobotQryStams.end  strictPre  Database_SendRobotQryStams_rec
+Database_SendRobotQryStams_rec  strictPre  Database_ExcuteRobotQry_snd
+Database_ExcuteRobotQry_snd  strictPre  ExcuteRobotQry.start
+ExcuteRobotQry.start  strictPre  ExcuteRobotQry.end
+ExcuteRobotQry.end  strictPre  Database_ExcuteRobotQry_rec
+Database_ExcuteRobotQry_rec  strictPre  Database_RobotQryResult_snd
+Database_RobotQryResult_snd  strictPre  RobotQryResult
+RobotQryResult  strictPre  CMSDU_RobotQryResult_rec
+qryend  strictPre  CMSDU_ParseRobotQryReturn_snd
+CMSDU_ParseRobotQryReturn_snd  strictPre  ParseRobotQryReturn.start
+ParseRobotQryReturn.start  strictPre  ParseRobotQryReturn.end
+ParseRobotQryReturn.end  strictPre  CMSDU_ParseRobotQryReturn_rec
+CMSDU_ParseRobotQryReturn_rec  strictPre  CMSDU_RobotQryReturn_snd
+CMSDU_RobotQryReturn_snd  strictPre  RobotQryReturn
+RobotQryReturn strictPre  CMSUI_RobotQryReturn_rec
+CMSUI_RobotQryReturn_rec  strictPre  CMSUI_DisplayRobotList_snd
+CMSUI_DisplayRobotList_snd  strictPre  DisplayRobotList
+DisplayRobotList  strictPre  Admin_DisplayRobotList_rec
+Editbegin = Admin_SelectRobots_snd union Admin_SelectRobottoChag_snd
+Admin_SelectRobots_snd exclude Admin_SelectRobottoChag_snd
+Editend = CMSDU_FormDelRobotStams_rec union CMSDU_FormChagRobotStams_rec
+Editbegin alternate Editend
+Admin_SelectRobots_snd  strictPre  SelectRobots
+SelectRobots  strictPre  CMSUI_SelectRobots_rec
+Admin_SelectRobots_snd  strictPre  Admin_DeleteSelectedRobots_snd
+Admin_DeleteSelectedRobots_snd  strictPre  DeleteSelectedRobots
+DeleteSelectedRobots   strictPre  CMSUI_DeleteSelectedRobots_rec
+CMSUI_SelectRobots_rec  strictPre  CMSUI_DeleteSelectedRobots_rec
+CMSUI_DeleteSelectedRobots_rec  strictPre  CMSUI_FormDelRobotReq_snd
+CMSUI_FormDelRobotReq_snd  strictPre  FormDelRobotReq
+FormDelRobotReq  strictPre  CMSDU_FormDelRobotReq_rec
+CMSDU_FormDelRobotReq_rec  strictPre  CMSDU_FormDelRobotStams_snd
+CMSDU_FormDelRobotStams_snd  strictPre  FormDelRobotStams
+FormDelRobotStams  strictPre  CMSDU_FormDelRobotStams_rec
+Admin_SelectRobottoChag_snd  strictPre  SelectRobottoChag
+SelectRobottoChag  strictPre  CMSUI_SelectRobottoChag_rec
+Admin_SelectRobottoChag_snd  strictPre  Admin_FillRobotChanges_snd
+Admin_FillRobotChanges_snd  strictPre  FillRobotChanges.start
+FillRobotChanges.start  strictPre  FillRobotChanges.end
+FillRobotChanges.end  strictPre  CMSUI_FillRobotChanges_rec
+CMSUI_SelectRobottoChag_rec  strictPre  CMSUI_FillRobotChanges_rec
+Admin_FillRobotChanges_snd  strictPre  Admin_ChgRobotSubmit_snd
+Admin_ChgRobotSubmit_snd  strictPre  ChgRobotSubmit
+ChgRobotSubmit  strictPre  CMSUI_ChgRobotSubmit_rec
+CMSUI_FillRobotChanges_rec  strictPre  CMSUI_ChgRobotSubmit_rec
+CMSUI_ChgRobotSubmit_rec  strictPre  CMSUI_RobotChagInvalid_snd
+CMSUI_RobotChagInvalid_snd  strictPre  RobotChagInvalid
+RobotChagInvalid  strictPre  Admin_RobotChagInvalid_rec
+Admin_RobotChagInvalid_rec  strictPre  Admin_reFillRobotChanges_snd
+Admin_reFillRobotChanges_snd  strictPre  reFillRobotChanges.start
+reFillRobotChanges.start  strictPre  reFillRobotChanges.end
+reFillRobotChanges.end  strictPre  CMSUI_reFillRobotChanges_rec
+Admin_reFillRobotChanges_snd strictPre  Admin_reChgRobotSubmit_snd
+Admin_reChgRobotSubmit_snd  strictPre  reChgRobotSubmit
+reChgRobotSubmit  strictPre  CMSUI_reChgRobotSubmit_rec
+chagInvalidx=CMSUI_reChgRobotSubmit_rec filteredBy 01
+chagInvalidx  strictPre  CMSUI_FormRobotChanges_snd
+CMSUI_FormRobotChanges_snd  strictPre  FormRobotChanges
+FormRobotChanges  strictPre  CMSDU_FormRobotChanges_rec
+CMSDU_FormRobotChanges_rec  strictPre  CMSDU_FormChagRobotStams_snd
+CMSDU_FormChagRobotStams_snd  strictPre  FormChagRobotStams
+FormChagRobotStams strictPre CMSDU_FormChagRobotStams_rec
+operateend  strictPre  CMSDU_ConnDataset_snd2
+CMSDU_ConnDataset_snd2 strictPre ConnDataset.start
+ConnDataset.end strictPre Dataset_ConnDataset_rec2
+Dataset_ConnDataset_rec2 strictPre Dataset_ConnDatasetFail_snd2
+Dataset_ConnDatasetFail_snd2 strictPre ConnDatasetFail
+ConnDatasetFail strictPre CMSDU_ConnDatasetFail_rec2
+CMSDU_ConnDatasetFail_rec2 strictPre CMSDU_reConnDataset_snd2
+CMSDU_reConnDataset_snd2 strictPre reConnDataset.start
+reConnDataset.end strictPre Database_reConnDataset_rec2
+dconnloopx=Database_reConnDataset_rec2 filteredBy 01
+dconnloopx  strictPre  dconnaltbegin
+dconnaltbegin = Database_DatabaseConnFault_snd2 union CMSDU_SendRMStams_snd
+Database_DatabaseConnFault_snd2 exclude CMSDU_SendRMStams_snd
+dconnaltend = CMSDU_DatabaseConnFault_rec2 union CMSDU_ExecuteRMFeedback_rec
+dconnaltbegin alternate dconnaltend
+Database_DatabaseConnFault_snd2 strictPre DatabaseConnFault
+DatabaseConnFault strictPre CMSDU_DatabaseConnFault_rec2
+CMSDU_SendRMStams_snd  strictPre  SendRMStams.start
+SendRMStams.start  strictPre  SendRMStams.end
+SendRMStams.end  strictPre  Database_SendRMStams_rec
+Database_SendRMStams_rec  strictPre  Database_ExecuteRMStams_snd
+Database_ExecuteRMStams_snd  strictPre  ExecuteRMStams.start
+ExecuteRMStams.start  strictPre  ExecuteRMStams.end
+ExecuteRMStams.end  strictPre  Database_ExecuteRMStams_rec
+Database_ExecuteRMStams_rec  strictPre  Database_ExecuteRMFeedback_snd
+Database_ExecuteRMFeedback_snd  strictPre  ExecuteRMFeedback
+ExecuteRMFeedback  strictPre  CMSDU_ExecuteRMFeedback_rec
+dconnaltend  strictPre  CMSDU_ParseRMFeedback_snd
+CMSDU_ParseRMFeedback_snd  strictPre  ParseRMFeedback.start
+ParseRMFeedback.start  strictPre  ParseRMFeedback.end
+ParseRMFeedback.end  strictPre  CMSDU_ParseRMFeedback_rec
+CMSDU_ParseRMFeedback_rec  strictPre  CMSDU_SendRMResults_snd
+CMSDU_SendRMResults_snd  strictPre  SendRMResults
+SendRMResults  strictPre  CMSUI_SendRMResults_rec
+CMSUI_SendRMResults_rec  strictPre  CMSUI_DisplayRMResults_snd
+CMSUI_DisplayRMResults_snd  strictPre  DisplayRMResults
+DisplayRMResults  strictPre  Admin_DisplayRMResults_rec
+RobotConnected.end coincides RobotNotConnected.start
+RobotConnected.start coincides RobotNotConnected.end
+CMConnected.end coincides CMNotConnected.start
+CMConnected.start coincides CMNotConnected.end
+AdminNotLogin.start = AdminLoginReject union AdminLogout
+AdminLogInSucc coincides AdminNotLogin.end
+UserNotLogin.start = UserLoginReject union UserLogout
+UserLogInSucc coincides UserNotLogin.end
+OpenCabin coincides CabinOpen.start
+CloseCabin coincides CabinOpen.end
