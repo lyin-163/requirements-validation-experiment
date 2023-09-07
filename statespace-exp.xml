@@ -1,0 +1,1009 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// 971204, Arne, Fredrik, Kim &amp; Paul.
+// Fairmont Hotel, San Francisco.
+
+      // # logical clocks
+const int CTN = 25;         // # constraints
+typedef struct {
+bool mt;
+bool cnt; 
+bool atk;
+bool dec;
+}LogicalClock;
+
+
+bool cstrDec[CTN];//subClock,union,exclude,inf; this kind of constraints not included
+broadcast chan start, end, fire;
+LogicalClock a,b,c,d;
+LogicalClock c0,c1,c2,c3,c4,c5,c6,c7,c8,c9;
+LogicalClock c10,c11,c12,c13,c14,c15,c16,c17,c18,c19;
+
+
+
+
+
+
+</declaration>
+	<template>
+		<name>ObIS</name>
+		<parameter>LogicalClock &amp;c, LogicalClock &amp;e</parameter>
+		<location id="id0" x="-2074" y="-2099">
+		</location>
+		<location id="id1" x="-2006" y="-2099">
+			<urgent/>
+		</location>
+		<location id="id2" x="-1768" y="-2142">
+			<name x="-1793" y="-2176">Satisfied</name>
+			<urgent/>
+		</location>
+		<location id="id3" x="-1768" y="-2065">
+			<name x="-1784" y="-2056">Violated</name>
+			<urgent/>
+		</location>
+		<location id="id4" x="-1827" y="-2099">
+			<urgent/>
+		</location>
+		<location id="id5" x="-1904" y="-2099">
+			<urgent/>
+		</location>
+		<init ref="id0"/>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id4"/>
+			<label kind="guard" x="-1878" y="-2099">c.atk</label>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-1861" y="-2133">!c.atk</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-2013" y="-2082">end?</label>
+			<nail x="-2031" y="-2065"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-2005" y="-2159">end?</label>
+			<nail x="-2014" y="-2141"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id3"/>
+			<label kind="guard" x="-1810" y="-2099">!e.atk</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id2"/>
+			<label kind="guard" x="-1802" y="-2125">e.atk</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-1997" y="-2124">c.dec&amp;&amp;e.dec</label>
+			<nail x="-1972" y="-2099"/>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-2056" y="-2116">start?</label>
+		</transition>
+	</template>
+	<template>
+		<name>ObIO</name>
+		<parameter>LogicalClock &amp;cs,LogicalClock &amp;e,LogicalClock &amp;ce</parameter>
+		<location id="id6" x="-1538" y="-2091">
+			<urgent/>
+		</location>
+		<location id="id7" x="-1674" y="-2091">
+		</location>
+		<location id="id8" x="-1606" y="-2091">
+			<urgent/>
+		</location>
+		<location id="id9" x="-1597" y="-2049">
+			<urgent/>
+		</location>
+		<location id="id10" x="-1410" y="-2091">
+		</location>
+		<location id="id11" x="-1350" y="-2091">
+			<urgent/>
+		</location>
+		<location id="id12" x="-1351" y="-1989">
+			<urgent/>
+		</location>
+		<location id="id13" x="-1470" y="-2049">
+			<name x="-1495" y="-2074">enTicked</name>
+			<urgent/>
+		</location>
+		<location id="id14" x="-1436" y="-1972">
+			<name x="-1427" y="-1980">Violated</name>
+			<urgent/>
+		</location>
+		<location id="id15" x="-1351" y="-1938">
+			<name x="-1376" y="-1930">eTicked</name>
+		</location>
+		<location id="id16" x="-1410" y="-1938">
+			<urgent/>
+		</location>
+		<location id="id17" x="-1555" y="-2015">
+			<name x="-1580" y="-2049">Satisfied</name>
+			<urgent/>
+		</location>
+		<location id="id18" x="-1606" y="-1938">
+			<urgent/>
+		</location>
+		<location id="id19" x="-1469" y="-2091">
+			<name x="-1479" y="-2125">csTicked</name>
+			<urgent/>
+		</location>
+		<location id="id20" x="-1351" y="-2040">
+			<urgent/>
+		</location>
+		<location id="id21" x="-1538" y="-1938">
+			<urgent/>
+		</location>
+		<init ref="id7"/>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id17"/>
+			<label kind="guard" x="-1521" y="-2023">e.atk&amp;&amp;ce.atk</label>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id21"/>
+			<label kind="guard" x="-1521" y="-1955">ce.dec&amp;&amp;e.dec</label>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id20"/>
+			<label kind="guard" x="-1385" y="-2083">e.dec&amp;&amp;ce.dec</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id19"/>
+			<label kind="guard" x="-1521" y="-2108">cs.atk</label>
+		</transition>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id15"/>
+			<label kind="synchronisation" x="-1478" y="-1930">end?</label>
+			<nail x="-1538" y="-1913"/>
+			<nail x="-1410" y="-1913"/>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id18"/>
+			<label kind="guard" x="-1589" y="-1955">!ce.atk</label>
+			<nail x="-1563" y="-1938"/>
+			<nail x="-1572" y="-1938"/>
+			<nail x="-1572" y="-1938"/>
+		</transition>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-1614" y="-2015">end?</label>
+			<nail x="-1640" y="-2015"/>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-1512" y="-1989">end?</label>
+			<nail x="-1657" y="-1972"/>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id17"/>
+			<label kind="guard" x="-1572" y="-1972">ce.atk</label>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id16"/>
+			<label kind="synchronisation" x="-1393" y="-1955">start?</label>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id15"/>
+			<label kind="synchronisation" x="-1385" y="-1972">end?</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-1436" y="-2083">end?</label>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id14"/>
+			<label kind="guard" x="-1453" y="-2006">!e.atk&amp;&amp;ce.atk</label>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id13"/>
+			<label kind="guard" x="-1453" y="-2066">!e.atk&amp;&amp;!ce.atk</label>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id12"/>
+			<label kind="guard" x="-1385" y="-2032">!ce.atk&amp;&amp;e.atk</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="-1393" y="-2108">start?</label>
+		</transition>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-1452" y="-2108">end?</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-1640" y="-2066">end?</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id9"/>
+			<label kind="guard" x="-1572" y="-2074">!cs.atk</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id6"/>
+			<label kind="guard" x="-1589" y="-2108">cs.dec</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id8"/>
+			<label kind="synchronisation" x="-1657" y="-2108">start?</label>
+		</transition>
+	</template>
+	<template>
+		<name>ObIOk</name>
+		<parameter>LogicalClock &amp;cs,LogicalClock &amp;e,LogicalClock &amp;ce,const int&amp;k</parameter>
+		<declaration>int x;</declaration>
+		<location id="id22" x="-1607" y="-2099">
+			<urgent/>
+		</location>
+		<location id="id23" x="-1785" y="-2099">
+		</location>
+		<location id="id24" x="-1725" y="-2099">
+			<urgent/>
+		</location>
+		<location id="id25" x="-1607" y="-2039">
+			<urgent/>
+		</location>
+		<location id="id26" x="-1437" y="-2099">
+		</location>
+		<location id="id27" x="-1377" y="-2099">
+			<urgent/>
+		</location>
+		<location id="id28" x="-1079" y="-2099">
+			<urgent/>
+		</location>
+		<location id="id29" x="-1199" y="-2048">
+			<name x="-1224" y="-2039">enTicked</name>
+			<urgent/>
+		</location>
+		<location id="id30" x="-1445" y="-2014">
+			<name x="-1471" y="-2005">Violated</name>
+			<urgent/>
+		</location>
+		<location id="id31" x="-1020" y="-2099">
+		</location>
+		<location id="id32" x="-1037" y="-2040">
+			<urgent/>
+		</location>
+		<location id="id33" x="-1148" y="-1980">
+			<name x="-1173" y="-1972">Satisfied</name>
+			<urgent/>
+		</location>
+		<location id="id34" x="-1113" y="-2065">
+			<urgent/>
+		</location>
+		<location id="id35" x="-1496" y="-2099">
+			<name x="-1506" y="-2133">csTicked</name>
+			<urgent/>
+		</location>
+		<location id="id36" x="-1199" y="-2099">
+			<urgent/>
+		</location>
+		<location id="id37" x="-1096" y="-2014">
+			<urgent/>
+		</location>
+		<init ref="id23"/>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id26"/>
+			<label kind="guard" x="-1351" y="-2150">x&lt;k</label>
+			<label kind="synchronisation" x="-1326" y="-2150">end?</label>
+			<nail x="-1122" y="-2133"/>
+			<nail x="-1402" y="-2133"/>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id30"/>
+			<label kind="guard" x="-1352" y="-2014">ce.atk&amp;&amp;e.atk</label>
+			<nail x="-1130" y="-2014"/>
+		</transition>
+		<transition>
+			<source ref="id32"/>
+			<target ref="id37"/>
+			<label kind="guard" x="-1079" y="-2031">ce.dec&amp;&amp;e.dec</label>
+		</transition>
+		<transition>
+			<source ref="id27"/>
+			<target ref="id36"/>
+			<label kind="guard" x="-1369" y="-2116">cs.dec&amp;&amp;e.dec&amp;&amp;ce.dec</label>
+		</transition>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id30"/>
+			<label kind="guard" x="-1496" y="-2056">e.atk</label>
+		</transition>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id35"/>
+			<label kind="guard" x="-1589" y="-2116">cs.atk&amp;&amp;!e.atk</label>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id31"/>
+			<label kind="synchronisation" x="-1105" y="-2082">end?</label>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id34"/>
+			<label kind="guard" x="-1164" y="-2048">!e.atk&amp;&amp;!ce.atk</label>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id23"/>
+			<label kind="synchronisation" x="-1547" y="-1997">end?</label>
+			<nail x="-1165" y="-1980"/>
+			<nail x="-1717" y="-1980"/>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id23"/>
+			<label kind="synchronisation" x="-1707" y="-2031">end?</label>
+			<nail x="-1725" y="-2014"/>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id33"/>
+			<label kind="guard" x="-1207" y="-2014">ce.atk&amp;&amp;!e.atk</label>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id32"/>
+			<label kind="synchronisation" x="-1045" y="-2082">start?</label>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id31"/>
+			<label kind="guard" x="-1062" y="-2116">x==k</label>
+			<label kind="synchronisation" x="-1062" y="-2099">end?</label>
+		</transition>
+		<transition>
+			<source ref="id29"/>
+			<target ref="id26"/>
+			<label kind="synchronisation" x="-1292" y="-2048">end?</label>
+			<nail x="-1369" y="-2048"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id30"/>
+			<label kind="guard" x="-1343" y="-2074">ce.atk</label>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id29"/>
+			<label kind="guard" x="-1233" y="-2082">!e.atk&amp;&amp;!ce.atk</label>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id28"/>
+			<label kind="guard" x="-1190" y="-2116">!ce.atk&amp;&amp;e.atk</label>
+			<label kind="assignment" x="-1156" y="-2099">x++</label>
+		</transition>
+		<transition>
+			<source ref="id26"/>
+			<target ref="id27"/>
+			<label kind="synchronisation" x="-1420" y="-2116">start?</label>
+		</transition>
+		<transition>
+			<source ref="id35"/>
+			<target ref="id26"/>
+			<label kind="synchronisation" x="-1479" y="-2116">end?</label>
+			<label kind="assignment" x="-1479" y="-2099">x=0</label>
+		</transition>
+		<transition>
+			<source ref="id25"/>
+			<target ref="id23"/>
+			<label kind="synchronisation" x="-1708" y="-2057">end?</label>
+			<nail x="-1734" y="-2040"/>
+		</transition>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id25"/>
+			<label kind="guard" x="-1641" y="-2073">!cs.atk&amp;&amp;!e.atk</label>
+		</transition>
+		<transition>
+			<source ref="id24"/>
+			<target ref="id22"/>
+			<label kind="guard" x="-1708" y="-2116">cs.dec&amp;&amp;e.dec</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id24"/>
+			<label kind="synchronisation" x="-1767" y="-2116">start?</label>
+		</transition>
+	</template>
+	<template>
+		<name>ObAL</name>
+		<parameter>LogicalClock &amp;cs,LogicalClock &amp;ce</parameter>
+		<location id="id38" x="-1563" y="-1929">
+			<urgent/>
+		</location>
+		<location id="id39" x="-1751" y="-1929">
+		</location>
+		<location id="id40" x="-1691" y="-1929">
+			<urgent/>
+		</location>
+		<location id="id41" x="-1563" y="-1878">
+			<name x="-1581" y="-1869">Violated</name>
+			<urgent/>
+		</location>
+		<location id="id42" x="-1436" y="-1929">
+			<name x="-1446" y="-1963">csTicked</name>
+			<urgent/>
+		</location>
+		<location id="id43" x="-1376" y="-1929">
+		</location>
+		<location id="id44" x="-1308" y="-1929">
+			<urgent/>
+		</location>
+		<location id="id45" x="-1308" y="-1827">
+			<urgent/>
+		</location>
+		<location id="id46" x="-1308" y="-1878">
+		</location>
+		<location id="id47" x="-1665" y="-1895">
+			<urgent/>
+		</location>
+		<init ref="id39"/>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id42"/>
+			<label kind="guard" x="-1444" y="-1912">!cs.atk&amp;&amp;!ce.atk</label>
+		</transition>
+		<transition>
+			<source ref="id45"/>
+			<target ref="id39"/>
+			<label kind="synchronisation" x="-1470" y="-1844">end?</label>
+			<nail x="-1665" y="-1827"/>
+		</transition>
+		<transition>
+			<source ref="id47"/>
+			<target ref="id39"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id47"/>
+			<label kind="guard" x="-1674" y="-1920">!cs.atk&amp;&amp;!ce.atk</label>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id41"/>
+			<label kind="guard" x="-1478" y="-1878">cs.atk</label>
+		</transition>
+		<transition>
+			<source ref="id46"/>
+			<target ref="id45"/>
+			<label kind="guard" x="-1342" y="-1869">!cs.atk&amp;&amp;ce.atk</label>
+		</transition>
+		<transition>
+			<source ref="id44"/>
+			<target ref="id46"/>
+			<label kind="guard" x="-1342" y="-1920">cs.dec&amp;&amp;ce.dec</label>
+			<nail x="-1308" y="-1895"/>
+		</transition>
+		<transition>
+			<source ref="id43"/>
+			<target ref="id44"/>
+			<label kind="synchronisation" x="-1359" y="-1946">start?</label>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id43"/>
+			<label kind="synchronisation" x="-1426" y="-1946">end?</label>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id42"/>
+			<label kind="guard" x="-1546" y="-1946">cs.atk&amp;&amp;!ce.atk</label>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id39"/>
+			<label kind="synchronisation" x="-1648" y="-1878">end?</label>
+			<nail x="-1691" y="-1878"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id41"/>
+			<label kind="guard" x="-1572" y="-1912">!cs.atk&amp;&amp;ce.atk</label>
+		</transition>
+		<transition>
+			<source ref="id40"/>
+			<target ref="id38"/>
+			<label kind="guard" x="-1674" y="-1946">cs.dec&amp;&amp;ce.dec</label>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id40"/>
+			<label kind="synchronisation" x="-1733" y="-1946">start?</label>
+		</transition>
+	</template>
+	<template>
+		<name x="32" y="16">ClockRevolution</name>
+		<parameter>LogicalClock &amp;lc</parameter>
+		<declaration>clock x;</declaration>
+		<location id="id48" x="-1964" y="-3358" color="#ff0000">
+			<name x="-1990" y="-3392">assertFalse</name>
+			<urgent/>
+		</location>
+		<location id="id49" x="-1590" y="-3273">
+			<urgent/>
+		</location>
+		<location id="id50" x="-1649" y="-3273">
+			<urgent/>
+		</location>
+		<location id="id51" x="-1964" y="-3265">
+			<urgent/>
+		</location>
+		<location id="id52" x="-2142" y="-3264">
+		</location>
+		<location id="id53" x="-2049" y="-3265">
+			<urgent/>
+		</location>
+		<init ref="id52"/>
+		<transition>
+			<source ref="id53"/>
+			<target ref="id51"/>
+			<label kind="synchronisation" x="-2031" y="-3281">fire?</label>
+		</transition>
+		<transition>
+			<source ref="id48"/>
+			<target ref="id50"/>
+			<label kind="assignment" x="-1887" y="-3375">lc.cnt=false,lc.dec=true</label>
+			<nail x="-1700" y="-3358"/>
+		</transition>
+		<transition>
+			<source ref="id52"/>
+			<target ref="id53"/>
+			<label kind="synchronisation" x="-2125" y="-3281">start?</label>
+		</transition>
+		<transition>
+			<source ref="id51"/>
+			<target ref="id48"/>
+			<label kind="guard" x="-2058" y="-3316">lc.mt &amp;&amp; lc.cnt</label>
+			<label kind="assignment" x="-2041" y="-3333">lc.dec=true</label>
+		</transition>
+		<transition>
+			<source ref="id49"/>
+			<target ref="id52"/>
+			<label kind="assignment" x="-2023" y="-3222">lc.mt=false,lc.cnt=false,lc.atk=false,lc.dec=false,x=0</label>
+			<nail x="-1666" y="-3205"/>
+			<nail x="-2066" y="-3205"/>
+		</transition>
+		<transition>
+			<source ref="id50"/>
+			<target ref="id49"/>
+			<label kind="synchronisation" x="-1632" y="-3290">end?</label>
+		</transition>
+		<transition>
+			<source ref="id51"/>
+			<target ref="id50"/>
+			<label kind="guard" x="-1932" y="-3257">!lc.mt &amp;&amp; lc.cnt</label>
+			<label kind="assignment" x="-1828" y="-3256">lc.atk=false,lc.dec=true</label>
+			<nail x="-1900" y="-3241"/>
+			<nail x="-1683" y="-3239"/>
+		</transition>
+		<transition>
+			<source ref="id51"/>
+			<target ref="id50"/>
+			<label kind="guard" x="-1932" y="-3281">lc.mt &amp;&amp; !lc.cnt</label>
+			<label kind="assignment" x="-1828" y="-3281">lc.atk=false,lc.dec=true</label>
+			<nail x="-1948" y="-3265"/>
+			<nail x="-1683" y="-3264"/>
+		</transition>
+		<transition>
+			<source ref="id51"/>
+			<target ref="id50"/>
+			<label kind="guard" x="-1932" y="-3305">!lc.mt &amp;&amp; !lc.cnt</label>
+			<label kind="assignment" x="-1828" y="-3307">lc.atk=true, lc.dec=true</label>
+			<nail x="-1884" y="-3289"/>
+			<nail x="-1675" y="-3290"/>
+		</transition>
+		<transition>
+			<source ref="id51"/>
+			<target ref="id50"/>
+			<label kind="guard" x="-1932" y="-3329">lc.mt &amp;&amp; !lc.cnt</label>
+			<label kind="assignment" x="-1828" y="-3332">lc.atk=true,lc.dec=true</label>
+			<nail x="-1900" y="-3313"/>
+			<nail x="-1683" y="-3315"/>
+		</transition>
+	</template>
+	<template>
+		<name x="32" y="16">Alternate</name>
+		<parameter>LogicalClock &amp;cL, LogicalClock &amp;cR, const int &amp;id</parameter>
+		<declaration>clock w;</declaration>
+		<location id="id54" x="-1633" y="-1287">
+			<urgent/>
+		</location>
+		<location id="id55" x="-1537" y="-1287">
+			<urgent/>
+		</location>
+		<location id="id56" x="-1334" y="-1283">
+			<urgent/>
+		</location>
+		<location id="id57" x="-1411" y="-1343">
+			<urgent/>
+		</location>
+		<location id="id58" x="-1470" y="-1343">
+			<urgent/>
+		</location>
+		<location id="id59" x="-1689" y="-1343">
+			<urgent/>
+		</location>
+		<location id="id60" x="-1275" y="-1343">
+		</location>
+		<location id="id61" x="-1768" y="-1343">
+		</location>
+		<init ref="id61"/>
+		<transition>
+			<source ref="id56"/>
+			<target ref="id55"/>
+			<label kind="assignment" x="-1521" y="-1283">cL.cnt=true, cstrDec[id]=true</label>
+		</transition>
+		<transition>
+			<source ref="id59"/>
+			<target ref="id58"/>
+			<label kind="assignment" x="-1666" y="-1360">cR.cnt=true, cstrDec[id]=true</label>
+		</transition>
+		<transition>
+			<source ref="id54"/>
+			<target ref="id60"/>
+			<label kind="guard" x="-1581" y="-1326">!cR.atk</label>
+			<nail x="-1564" y="-1309"/>
+			<nail x="-1343" y="-1309"/>
+		</transition>
+		<transition>
+			<source ref="id54"/>
+			<target ref="id61"/>
+			<label kind="guard" x="-1717" y="-1309">cR.atk</label>
+			<label kind="assignment" x="-1759" y="-1292">cstrDec[id]=false</label>
+			<nail x="-1721" y="-1287"/>
+			<nail x="-1753" y="-1319"/>
+		</transition>
+		<transition>
+			<source ref="id55"/>
+			<target ref="id54"/>
+			<label kind="synchronisation" x="-1593" y="-1287">end?</label>
+		</transition>
+		<transition>
+			<source ref="id60"/>
+			<target ref="id56"/>
+			<label kind="synchronisation" x="-1309" y="-1309">start?</label>
+		</transition>
+		<transition>
+			<source ref="id57"/>
+			<target ref="id61"/>
+			<label kind="guard" x="-1588" y="-1389">!cL.atk</label>
+			<nail x="-1453" y="-1385"/>
+			<nail x="-1721" y="-1383"/>
+		</transition>
+		<transition>
+			<source ref="id57"/>
+			<target ref="id60"/>
+			<label kind="guard" x="-1360" y="-1343">cL.atk</label>
+			<label kind="assignment" x="-1394" y="-1360">cstrDec[id]=false</label>
+		</transition>
+		<transition>
+			<source ref="id58"/>
+			<target ref="id57"/>
+			<label kind="synchronisation" x="-1453" y="-1360">end?</label>
+		</transition>
+		<transition>
+			<source ref="id61"/>
+			<target ref="id59"/>
+			<label kind="synchronisation" x="-1743" y="-1360">start?</label>
+		</transition>
+	</template>
+	<template>
+		<name>strictPre</name>
+		<parameter>LogicalClock &amp;cL, LogicalClock &amp;cR, const int &amp;id</parameter>
+		<declaration>int x;</declaration>
+		<location id="id62" x="-1589" y="-1283">
+			<urgent/>
+		</location>
+		<location id="id63" x="-1445" y="-1283">
+			<urgent/>
+		</location>
+		<location id="id64" x="-1318" y="-1283">
+			<urgent/>
+		</location>
+		<location id="id65" x="-1386" y="-1343">
+			<urgent/>
+		</location>
+		<location id="id66" x="-1454" y="-1343">
+			<urgent/>
+		</location>
+		<location id="id67" x="-1689" y="-1343">
+			<urgent/>
+		</location>
+		<location id="id68" x="-1215" y="-1343">
+		</location>
+		<location id="id69" x="-1768" y="-1343">
+		</location>
+		<location id="id70" x="-1742" y="-1283">
+			<urgent/>
+		</location>
+		<init ref="id69"/>
+		<transition>
+			<source ref="id62"/>
+			<target ref="id68"/>
+			<label kind="guard" x="-1538" y="-1241">cL.atk&amp;&amp;!cR.atk</label>
+			<label kind="assignment" x="-1419" y="-1241">x++,cstrDec[id]=false</label>
+			<nail x="-1555" y="-1249"/>
+			<nail x="-1309" y="-1249"/>
+		</transition>
+		<transition>
+			<source ref="id62"/>
+			<target ref="id68"/>
+			<label kind="guard" x="-1572" y="-1266">(!cL.atk&amp;&amp;!cR.atk)||(cL.atk&amp;&amp;cR.atk)</label>
+			<label kind="assignment" x="-1343" y="-1266">cstrDec[id]=false</label>
+			<nail x="-1572" y="-1224"/>
+			<nail x="-1292" y="-1224"/>
+		</transition>
+		<transition>
+			<source ref="id70"/>
+			<target ref="id68"/>
+			<label kind="guard" x="-1530" y="-1326">x&gt;0</label>
+			<nail x="-1640" y="-1309"/>
+			<nail x="-1351" y="-1309"/>
+		</transition>
+		<transition>
+			<source ref="id70"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-1750" y="-1317">x==0</label>
+		</transition>
+		<transition>
+			<source ref="id64"/>
+			<target ref="id63"/>
+			<label kind="assignment" x="-1436" y="-1283">cstrDec[id]=true</label>
+		</transition>
+		<transition>
+			<source ref="id67"/>
+			<target ref="id66"/>
+			<label kind="assignment" x="-1666" y="-1360">cR.cnt=true, cstrDec[id]=true</label>
+		</transition>
+		<transition>
+			<source ref="id62"/>
+			<target ref="id70"/>
+			<label kind="guard" x="-1700" y="-1300">!cL.atk&amp;&amp;cR.atk</label>
+			<label kind="assignment" x="-1734" y="-1283">cstrDec[id]=false,x--</label>
+		</transition>
+		<transition>
+			<source ref="id63"/>
+			<target ref="id62"/>
+			<label kind="synchronisation" x="-1496" y="-1283">end?</label>
+		</transition>
+		<transition>
+			<source ref="id68"/>
+			<target ref="id64"/>
+			<label kind="synchronisation" x="-1292" y="-1309">start?</label>
+		</transition>
+		<transition>
+			<source ref="id65"/>
+			<target ref="id69"/>
+			<label kind="guard" x="-1588" y="-1389">!cL.atk</label>
+			<nail x="-1428" y="-1385"/>
+			<nail x="-1721" y="-1383"/>
+		</transition>
+		<transition>
+			<source ref="id65"/>
+			<target ref="id68"/>
+			<label kind="guard" x="-1369" y="-1360">cL.atk</label>
+			<label kind="assignment" x="-1377" y="-1343">cstrDec[id]=false,x++</label>
+		</transition>
+		<transition>
+			<source ref="id66"/>
+			<target ref="id65"/>
+			<label kind="synchronisation" x="-1437" y="-1360">end?</label>
+		</transition>
+		<transition>
+			<source ref="id69"/>
+			<target ref="id67"/>
+			<label kind="synchronisation" x="-1743" y="-1360">start?</label>
+			<label kind="assignment" x="-1750" y="-1343">x=0</label>
+		</transition>
+	</template>
+	<template>
+		<name>InitProcess</name>
+		<declaration>bool cstrDecAll(){
+bool flag=false;
+  for (i: int[0,CTN-1]){
+	if(cstrDec[i])
+        flag=true;
+    else return false;
+}
+return true;
+}
+
+</declaration>
+		<location id="id71" x="-2647" y="-2252">
+			<urgent/>
+		</location>
+		<location id="id72" x="-2715" y="-2252">
+			<urgent/>
+		</location>
+		<location id="id73" x="-2822" y="-2252">
+			<urgent/>
+		</location>
+		<location id="id74" x="-2902" y="-2252">
+		</location>
+		<init ref="id74"/>
+		<transition>
+			<source ref="id72"/>
+			<target ref="id71"/>
+			<label kind="synchronisation" x="-2697" y="-2269">fire!</label>
+		</transition>
+		<transition>
+			<source ref="id71"/>
+			<target ref="id74"/>
+			<label kind="synchronisation" x="-2809" y="-2227">end!</label>
+			<nail x="-2707" y="-2210"/>
+			<nail x="-2860" y="-2210"/>
+		</transition>
+		<transition>
+			<source ref="id73"/>
+			<target ref="id72"/>
+			<label kind="guard" x="-2806" y="-2268">cstrDecAll()</label>
+		</transition>
+		<transition>
+			<source ref="id74"/>
+			<target ref="id73"/>
+			<label kind="synchronisation" x="-2878" y="-2268">start!</label>
+			<nail x="-2878" y="-2252"/>
+		</transition>
+	</template>
+	<template>
+		<name>discretizedBy</name>
+		<parameter>LogicalClock &amp;c,const int &amp;r, const int &amp;id</parameter>
+		<declaration>clock x;</declaration>
+		<location id="id75" x="-2431" y="-1428">
+			<urgent/>
+		</location>
+		<location id="id76" x="-2491" y="-1428">
+			<urgent/>
+		</location>
+		<location id="id77" x="-2737" y="-1428">
+		</location>
+		<location id="id78" x="-2797" y="-1428">
+		</location>
+		<init ref="id78"/>
+		<transition>
+			<source ref="id75"/>
+			<target ref="id78"/>
+			<label kind="guard" x="-2720" y="-1360">c.atk</label>
+			<label kind="assignment" x="-2661" y="-1360">x=0,cstrDec[id]=false</label>
+			<nail x="-2508" y="-1343"/>
+			<nail x="-2761" y="-1348"/>
+		</transition>
+		<transition>
+			<source ref="id75"/>
+			<target ref="id78"/>
+			<label kind="guard" x="-2721" y="-1388">!c.atk</label>
+			<label kind="assignment" x="-2633" y="-1388">cstrDec[id]=false</label>
+			<nail x="-2508" y="-1369"/>
+			<nail x="-2745" y="-1372"/>
+		</transition>
+		<transition>
+			<source ref="id76"/>
+			<target ref="id75"/>
+			<label kind="synchronisation" x="-2474" y="-1445">end?</label>
+		</transition>
+		<transition>
+			<source ref="id77"/>
+			<target ref="id76"/>
+			<label kind="guard" x="-2703" y="-1411">x&lt;r</label>
+			<label kind="assignment" x="-2678" y="-1411">c.cnt=true, cstrDec[id]=true</label>
+			<nail x="-2705" y="-1396"/>
+			<nail x="-2525" y="-1394"/>
+		</transition>
+		<transition>
+			<source ref="id77"/>
+			<target ref="id76"/>
+			<label kind="guard" x="-2720" y="-1445">x==r</label>
+			<label kind="assignment" x="-2678" y="-1445">c.mt=true, cstrDec[id]=true</label>
+			<nail x="-2713" y="-1428"/>
+			<nail x="-2569" y="-1428"/>
+		</transition>
+		<transition>
+			<source ref="id78"/>
+			<target ref="id77"/>
+			<label kind="synchronisation" x="-2788" y="-1445">start?</label>
+			<nail x="-2793" y="-1428"/>
+		</transition>
+	</template>
+	<system>ClockRevolutiona = ClockRevolution(a);
+ClockRevolutionb = ClockRevolution(b);
+ClockRevolutionc = ClockRevolution(c);
+ClockRevolutiond = ClockRevolution(d);
+ClockRevolutionc0 = ClockRevolution(c0);
+ClockRevolutionc1 = ClockRevolution(c1);
+ClockRevolutionc2 = ClockRevolution(c2);
+ClockRevolutionc3 = ClockRevolution(c3);
+ClockRevolutionc4 = ClockRevolution(c4);
+ClockRevolutionc5 = ClockRevolution(c5);
+ClockRevolutionc6 = ClockRevolution(c6);
+ClockRevolutionc7 = ClockRevolution(c7);
+ClockRevolutionc8 = ClockRevolution(c8);
+ClockRevolutionc9 = ClockRevolution(c9);
+ClockRevolutionc10 = ClockRevolution(c10);
+ClockRevolutionc11 = ClockRevolution(c11);
+ClockRevolutionc12 = ClockRevolution(c12);
+ClockRevolutionc13 = ClockRevolution(c13);
+ClockRevolutionc14 = ClockRevolution(c14);
+ClockRevolutionc15 = ClockRevolution(c15);
+ClockRevolutionc16 = ClockRevolution(c16);
+ClockRevolutionc17 = ClockRevolution(c17);
+ClockRevolutionc18 = ClockRevolution(c18);
+ClockRevolutionc19 = ClockRevolution(c19);
+
+
+
+ctr1=strictPre(b,d,0);
+ctr2=strictPre(c,d,1);
+ctr3=strictPre(a,b,2);
+ctr4=strictPre(c0,c1,3);
+ctr5=strictPre(c1,c2,4);
+ctr6=strictPre(c2,c3,5);
+ctr7=strictPre(c3,c4,6);
+ctr8=strictPre(c4,c5,7);
+ctr9=strictPre(c5,c6,8);
+ctr10=strictPre(c6,c7,9);
+ctr11=strictPre(c7,c8,10);
+ctr12=strictPre(c8,c9,11);
+ctr13=strictPre(c9,c10,12);
+ctr14=strictPre(c10,c11,13);
+ctr15=strictPre(c11,c12,14);
+ctr16=strictPre(c12,c13,15);
+ctr17=strictPre(c13,c14,16);
+ctr18=strictPre(c14,c15,17);
+ctr19=strictPre(c15,c16,18);
+ctr20=strictPre(c16,c17,19);
+ctr21=strictPre(c17,c18,20);
+ctr22=strictPre(c18,c19,21);
+ctr23=strictPre(c1,c19,22);
+ctr24=strictPre(c1,c18,23);
+ctr25=strictPre(c1,c17,24);
+
+cr9obj =ObIS(a,b);
+initp = InitProcess(); 
+system cr9obj,ClockRevolutiona, ClockRevolutionb,ClockRevolutionc, ClockRevolutiond,initp,
+ClockRevolutionc0,ClockRevolutionc1,ClockRevolutionc2,ClockRevolutionc3,ClockRevolutionc4,ClockRevolutionc5,ClockRevolutionc6,ClockRevolutionc7,ClockRevolutionc8,ClockRevolutionc9,
+ClockRevolutionc10,ClockRevolutionc11,ClockRevolutionc12,ClockRevolutionc13,ClockRevolutionc14,ClockRevolutionc15,ClockRevolutionc16,ClockRevolutionc17,ClockRevolutionc18,ClockRevolutionc19,
+ctr1,ctr2,ctr3,ctr4,ctr5,ctr6,ctr7,ctr8,ctr9,ctr10,ctr11,ctr12,ctr13,ctr14,ctr15,ctr16,ctr17,ctr18,ctr19,ctr20,ctr21,ctr22,ctr23,ctr24,ctr25;</system>
+	<queries>
+		<query>
+			<formula></formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>
